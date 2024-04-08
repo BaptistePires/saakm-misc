@@ -142,3 +142,26 @@ fuckoff_cfs:
 ./kernel/sched/ipanema/cfs.c
 ./kernel/sched/ipanema/cfs_wwc.c
 ./kernel/sched/ipanema/cfs_wwc_local_new_unblock.c
+./include/generated/autoconf.h
++ ./include/linux/cgroup_subsys.h
++ ./include/linux/interrupt.h
++ ./include/linux/ipanema.h
++ ./include/linux/sched.h
++ ./include/uapi/linux/sched.h
++ ./include/uapi/linux/sched/types.h
++ ./kernel/sched/core.c
+./kernel/sched/fair.c
++ ./kernel/sched/ipanema.c
+./kernel/sched/ipanema/cfs.c
+./kernel/sched/ipanema/cfs_wwc.c
+./kernel/sched/ipanema/cfs_wwc_local_new_unblock.c
++ ./kernel/sched/ipanema.h
++ ./kernel/sched/sched.h
+./tools/include/uapi/linux/sched.h
+./tools/ipanema/ipasetpolicy/ipasetpolicy.c
+./tools/ipanema/ipastart/ipastart.c
+
+
+# Notes sur la migration
+- Maintenant le ptr 'next' n'existe plus dans les scheds class.
+Il faut se servir de la macro `DEFINE_SCHED_CLASS` et ajouter dans le fichier `include/asm-generic/vmlinux.lds.h` une section pour notre sched class (ils veulent vraiment pas qu'on rajoute des schedulers).
