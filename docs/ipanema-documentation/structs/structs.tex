@@ -1,0 +1,53 @@
+\section{Structures}
+Dans cette section nous allons voir les différentes structures utilisées dans \ipa et leurs utilités
+
+\subsection{\texttt{struct sched\_\ipam\_entity}}
+Nous allons commencer par la structure qui représente une entité d'ordonnancement. La structure est déclarée de cette façon :\newline
+\begin{lstlisting}[style=CStyle]
+struct sched_ipanema_entity {
+	union {
+		struct rb_node node_runqueue;
+		struct list_head node_list;
+	};
+
+	/* used for load balancing in policies */
+	struct list_head ipa_tasks;
+
+	int just_yielded;
+	int nopreempt;
+
+	enum ipanema_state state;
+	struct ipanema_rq *rq;
+
+	/* Policy-specific metadata */
+	void *policy_metadata;
+
+	struct ipanema_policy *policy;
+};
+\end{lstlisting}
+
+\par Les deux premiers champs, \texttt{struct rb\_node node\_runqueue} et \texttt{struct list\_head node\_list} sont utilisés pour maintenir une tâche dans une runqueue. Dû à l'union, on peut être dans une seule runqueue à un moment donner (soit dans une runqueue qui se sert d'un arbre rouge-noir comme CFS, ou une runqueue qui utilise une liste comme un algorithme FIFO par exemple).\\
+
+\par Le champ \texttt{struct list\_head ipa\_tasks} est utilisé par les différentes politiques d'ordonnancement pendant l'équilibrage de charge. Par exemple, si on migre des tâches d'un coeur \textit{$C_1$} à un coeur \textit{$C_2$}, on a besoin de retirer les tâches de la runqueue de \textit{$C_1$} en ayant le verrou sur celle-ci. Quand on retire les tâches on peut les ajouter à la liste \texttt{ipa\_tasks}. Une fois qu'on a retirée toutes les tâches qu'on souhaite migrer, on prend le verrour sur la runqueue de \textit{$C_2$} et on peut itérer sur la liste que l'on vient de construire.\\
+
+\par \texttt{int just\_yield} permet de savoir si on vient d'appeler \texttt{sched\_yield()} ou non.\\
+\par \texttt{int nopreempt}
+
+\par \texttt{enum ipanema\_state state } représente l'état d'une entitté \ipa. Les états possibles sont les suivants :
+\begin{lstlisting}[style=CStyle]
+enum ipanema_state {
+	IPANEMA_NOT_QUEUED, /* La tache n'est pas dans une runqueue */
+	IPANEMA_MIGRATING, /* La tache est en train de migrer d'un coeur a un autre */
+	IPANEMA_RUNNING, /* La tache est dans une runqueue et s'execute */
+	IPANEMA_READY, /* La tache est dans une runqueue mais ne s'execute pas */
+	IPANEMA_BLOCKED, /* La tache est bloque (I/O, lock, etc...) */
+	IPANEMA_TERMINATED, /* La tache meurt (?) */
+	/*
+	 * A special state that is equivalent to IPANEMA_READY, but makes it
+	 * possible to figure out that the state change came from tick().
+	 */
+	IPANEMA_READY_TICK
+};
+\end{lstlisting}
+
+\par \texttt{struct ipanema\_rq *rq} c'est un pointeur vers la \texttt{struct ipanema\_rq} sur laquelle la tâche s'exécute (ou va s'exécuter).

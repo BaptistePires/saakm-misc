@@ -1,0 +1,54 @@
+\documentclass{article}[pt]
+
+% packages
+\usepackage[T1]{fontenc}
+\usepackage[a4paper, margin=3cm]{geometry}
+\usepackage{xcolor}
+\usepackage{listings}
+
+% Code style
+\definecolor{mGreen}{rgb}{0,0.6,0}
+\definecolor{mGray}{rgb}{0.5,0.5,0.5}
+\definecolor{mPurple}{rgb}{0.58,0,0.82}
+\definecolor{backgroundColour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{CStyle}{
+    backgroundcolor=\color{backgroundColour},   
+    commentstyle=\color{mGreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{mGray},
+    stringstyle=\color{mPurple},
+    basicstyle=\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    language=C
+}
+
+% Commands
+\newcommand{\note}[1]{\textcolor{red}{\textit{[#1]}}}
+\newcommand{\todo}[1]{\textcolor{blue}{\textit{[#1]}}}
+\newcommand{\ipa}[0]{Ipanema~}
+\newcommand{\ipam}[0]{ipanema}
+
+
+\title{Documentation \ipa}
+
+\author{
+        Baptiste Pires
+}
+
+\begin{document}
+\maketitle
+
+\input{intro/intro}
+\input{structs/structs}
+\input{modules/modules}
+\end{document}
