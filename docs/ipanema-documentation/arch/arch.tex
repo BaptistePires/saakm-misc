@@ -1,0 +1,12 @@
+\section{\ipa architecture}
+\par Dans cette section nous allons voir les détails de l'architecture d'\ipa.
+
+\subsection{Les variables globales d'\ipa}
+Dans \ipa, il y a deux variables globales importantes : \texttt{struct list\_head ipanema\_policies} et \texttt{per\_cpu(struct task\_struct *, ipanema\_current)}. Nous allons voir comment ces deux variables sont utilisées pour comprendre leur utilitée.\newline
+
+\par{\textbf{ipanema\_policies}} La variables \texttt{struct list\_head ipanema\_policies} est une list chaînée qui contient toutes les politiques d'ordonnancement disponibles. Cela correspond à tous les modules qui ont été insérés en tant que politiques. Cette list est protégée par un \texttt{rwlock\_t ipanema\_rwlock} qui permet de la modifier/parcourir en toute sécurité.\newline
+Losrque l'on souhaite ajouter une politique, on fait appel à la fonction \texttt{ipanema\_add\_policy(struct ipanema\_policy *)} qui va insérer la nouvelle politique dans la liste.\newline
+Nous avons maintenant inséré une politique, mais aucun thread ne s'en sert sert pour l'instant. Pour ce faire, il va falloir se servir de l'appel système \texttt{SYS\_sched\_setattr} (voir \texttt{tools/ipanema/ipastart.c} pour un exemple d'utilisation). En somme, il appelle la fonction \texttt{\_\_sched\_setscheduler} qui va, si la politique demandée existe, modifier le champ de la \texttt{task\_struct.ipanema.policy} pour le faire pointer vers la politique souhaitée. Ensuite, cette liste sera par exemple utilisée dès que l'on a besoin de trouver une tâche à exécuter.\newline
+
+\par{\textbf{ipanema\_current}} Cette variable est l'une des plus importantes. Elle est définie \texttt{per\_cpu}, ce qui signifie que pour tous les CPUs, il y a une variable d'allouée. Ces variables vont stocker le processus en cours d'exécution sur le coeur auquel elles appartiennent. Pour voir cela, il faut regarder la fonction \texttt{change\_state} qui gère toutes les transitions d'états d'\ipa. On peut voir que pour la transition \texttt{x -> RUNNING} (une tâche va commencer son exécution) : \texttt{per\_cpu(ipanema\_current, next\_cpu) = p} où \texttt{next\_cpu} est le CPU sur lequel la tâche va s'exécuter et \texttt{p} ladite tâche.\newline
+Il faut noter que juste avant, la fonction \texttt{change\_rq} est appelée et la tâche \texttt{p} aura été retirée de sa runqueue où elle attendait à l'état \texttt{IPANEMA\_READY}.
