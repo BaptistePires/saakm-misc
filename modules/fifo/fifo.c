@@ -13,8 +13,10 @@
 MODULE_AUTHOR("Baptiste Pires, LIP6");
 MODULE_LICENSE("GPL");
 
+
 // #define FIFO_DEBUG 1
 /* We use a quantum of 30ms */
+
 #define QUANTUM_NS 30
 #define CORE_HAVE_CURRENT(c) ((c)->_current ? 1 : 0)
 
@@ -27,7 +29,6 @@ static const char *policy_name = "fifo\0";
 struct fifo_process {
     int state;
     struct task_struct *task;
-    struct list_head task_list;
     struct ipanema_rq *rq;
 
     unsigned long current_quantum_ns;
@@ -73,16 +74,16 @@ static void fifo_core_exit(struct ipanema_policy *policy, struct core_event *e)
 
 static void fifo_newly_idle(struct ipanema_policy *policy, struct core_event *e)
 {
-
 }
 
 static void fifo_enter_idle(struct ipanema_policy *policy, struct core_event *e)
 {
-
+    per_cpu(core, e->target).state = IPANEMA_IDLE_CORE;
 }
 
 static void fifo_exit_idle(struct ipanema_policy *policy, struct core_event *e)
 {
+    per_cpu(core, e->target).state = IPANEMA_ACTIVE_CORE;
 
 }
 
@@ -178,7 +179,7 @@ static int fifo_new_prepare(struct ipanema_policy *policy,
         #endif
         tmp_core = &per_cpu(core, cpu);
         dst_nr_tmp = tmp_core->rq.nr_tasks + CORE_HAVE_CURRENT(tmp_core);
-        if (dst_nr_tmp > dst_nr) {
+        if (dst_nr_tmp < dst_nr) {
             dst = cpu;
             dst_nr = dst_nr_tmp;
         }
@@ -224,7 +225,6 @@ static void fifo_tick(struct ipanema_policy *policy, struct process_event *e)
     fp->current_quantum_ns += 1;
     /* Do switch there */
     if ((fp->current_quantum_ns % QUANTUM_NS) == 0) {
-    pr_info("quantum ended\n    ;");
         /* Tasks has used its whole quantum, make it READY instead of RUNNING. */
         fifo_change_queue(fp, &per_cpu(core, task_cpu(fp->task)).rq,
             IPANEMA_READY_TICK);
@@ -264,7 +264,7 @@ static int fifo_unblock_prepare(struct ipanema_policy *policy, struct process_ev
         #endif
         tmp_core = &per_cpu(core, cpu);
         dst_nr_tmp = tmp_core->rq.nr_tasks + CORE_HAVE_CURRENT(tmp_core);
-        if (dst_nr_tmp > dst_nr) {
+        if (dst_nr_tmp < dst_nr) {
             dst = cpu;
             dst_nr = dst_nr_tmp;
         }
@@ -433,6 +433,8 @@ static int fifo_full_debug_info(struct seq_file *m,  void *p)
     return 0;
 }
 
+struct proc_dir_entry *proc_entry;
+
 static int __init fifo_mod_init(void)
 {
     int res;
@@ -462,7 +464,7 @@ static int __init fifo_mod_init(void)
         kfree(fifo_policy);
     }
 
-    proc_create_single("fifo_debug", 0, NULL, fifo_full_debug_info);
+    proc_entry = proc_create_single("fifo_debug", 0, NULL, fifo_full_debug_info);
     return res;
 }
 module_init(fifo_mod_init);
@@ -476,6 +478,6 @@ static void __exit fifo_exit(void)
     kfree(fifo_policy);
 
     printk(KERN_INFO "FIFO module unloaded\n");
-    
+    proc_remove(proc_entry);
 }
 module_exit(fifo_exit);
