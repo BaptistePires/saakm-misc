@@ -3,21 +3,21 @@
 #include <linux/slab.h>
 #include <linux/debugfs.h>
 #include <linux/proc_fs.h>
-
-/**
-    TODO : 
-        - use a cpu_mask for the actual cpu presents.
-*/
-
+/*
+ * This scheduler is a very simple FIFO scheduler without any load-balancing yet.
+ * There is one runqueue per core, where a process is spawned (whether it was 
+ * forked or switched sched class), it searches for the cpu with the least
+ * tasks enqueued and picks it.
+ */
 
 MODULE_AUTHOR("Baptiste Pires, LIP6");
 MODULE_LICENSE("GPL");
 
 
 // #define FIFO_DEBUG 1
-/* We use a quantum of 30ms */
 
-#define QUANTUM_NS 30
+/* We use a quantum of 30ms */
+#define QUANTUM_MS 30
 #define CORE_HAVE_CURRENT(c) ((c)->_current ? 1 : 0)
 
 
@@ -27,12 +27,11 @@ static const char *policy_name = "fifo\0";
     Represents a process.
 */
 struct fifo_process {
-    int state;
-    struct task_struct *task;
-    struct ipanema_rq *rq;
-
-    unsigned long current_quantum_ns;
-    unsigned long last_sched_ns;
+    int state; /* IPANEMA state of the process */
+    struct task_struct *task; /* Pointer to the task_struct of this process */
+    struct ipanema_rq *rq; /* IPANEMA runqueue if it's enqueued in one */
+    unsigned long current_quantum_ns; /* Total execution time*/
+    unsigned long last_sched_ns; /* Last time scheduled timestamp */
     
 };
 
@@ -40,17 +39,23 @@ struct fifo_process {
     Represents a core.
 */
 struct fifo_core {
-    enum ipanema_core_state state; /* core state */
-    int id; /* core id */
+    enum ipanema_core_state state; /* Core state */
+    int id; /* core id (== cpu id) */
     
     struct fifo_process *_current; /* the current process executing on this core */
 
-    /* The runqueue allocated to this core. */
-    struct ipanema_rq rq; 
+    struct ipanema_rq rq;  /* The runqueue allocated to this core. */
 
 
 };
+
 DEFINE_PER_CPU(struct fifo_core, core);
+
+/*
+    A cpumask that will be used to store which core are online or not (idle or deactivated).
+*/
+static cpumask_t online_cores;
+
 
 /* ------------------------ CPU cores related functions ------------------------ */
 static enum ipanema_core_state fifo_get_core_state(struct ipanema_policy *policy,
@@ -60,27 +65,45 @@ static enum ipanema_core_state fifo_get_core_state(struct ipanema_policy *policy
     return per_cpu(core, target).state;
 }
 
+/*
+ * Core is reactivated
+ */
 static void fifo_core_entry(struct ipanema_policy *policy, struct core_event *e)
 {
     struct fifo_core *c = &per_cpu(core, e->target);
     c->state = IPANEMA_ACTIVE_CORE;
+    cpumask_set_cpu(c->id, &online_cores);
 }
 
+/*
+ * Core is deactivated.
+ */
 static void fifo_core_exit(struct ipanema_policy *policy, struct core_event *e)
 {
     struct fifo_core *c = &per_cpu(core, e->target);
     c->state = IPANEMA_IDLE_CORE;
+    cpumask_clear_cpu(c->id, &online_cores);
 }
 
+/*
+ * We're about to become idle, it can be a good place to steal tasks from busy cores.
+ */
 static void fifo_newly_idle(struct ipanema_policy *policy, struct core_event *e)
 {
 }
 
+/*
+ * We become idle for real.
+ */
 static void fifo_enter_idle(struct ipanema_policy *policy, struct core_event *e)
 {
     per_cpu(core, e->target).state = IPANEMA_IDLE_CORE;
 }
 
+/*
+ * We're leaving the idle state. Can happens when we were idle and a task picks
+ * this core to be enqueued on.
+ */
 static void fifo_exit_idle(struct ipanema_policy *policy, struct core_event *e)
 {
     per_cpu(core, e->target).state = IPANEMA_ACTIVE_CORE;
@@ -96,48 +119,29 @@ static void fifo_balancing_select(struct ipanema_policy *policy, struct core_eve
 
 /* ------------------------ Processes related functions ------------------------ */
 /*
-    Helper function used properly call the ipanema function "change_state".
-
-*/
-static void fifo_change_queue(struct fifo_process *fp, struct ipanema_rq *rq,
-                                int state)
+ * Helper function used to enqueue a task @fp when state is IPANEMA_READY
+ * or IPANEMA_READY_TICK.
+ */
+static void fifo_enqueue_task(struct fifo_process *fp, struct ipanema_rq *next_rq, 
+                                    int state)
 {
-    struct fifo_core *c = &per_cpu(core, task_cpu(fp->task));
+    /* The current core on which the process is or will be */
+    struct fifo_core *fc = &per_cpu(core, task_cpu(fp->task));
 
-    /* We need to remove it from its runqueue if it was current. */
-    if (fp->state == IPANEMA_RUNNING)
-        c->_current = NULL;
+    /*
+        * When switching from IPANEMA_RURNNING to IPANEMA_READY_TICK,
+        * the process was removed from the cpu and we need to update it
+        * for our core.
+        */
+    if (state == IPANEMA_READY_TICK) {
+        fc->_current = NULL;
+    }
 
     fp->state = state;
-    fp->rq = rq;
-    change_state(fp->task, fp->state, task_cpu(fp->task), rq);
-}
+    fp->rq = next_rq;
 
-static void fifo_change_queue_and_core(struct fifo_process *fp, struct ipanema_rq *rq,
-                                int state, struct fifo_core *fc)
-{
-    /* 
-        If task is currently running, it won't be the case anymore, so 
-        we update _current accordingly.
-    */
-    if (fp->state == IPANEMA_RUNNING)
-        per_cpu(core, task_cpu(fp->task))._current = NULL;
-    
-    fp->state = state;
-    fp->rq = rq;
-    change_state(fp->task, state, fc->id, rq);
+    change_state(fp->task, state, task_cpu(fp->task), next_rq);
 }
-
-static void fifo_change_current_process(struct fifo_process *fc,
-                            struct fifo_process **current_dst, int state)
-{
-    // pr_info("fifo_change_current_process\n");
-    /* Change fifo_core->_current value */
-    *current_dst = fc;
-    fc->state = state;
-    fc->rq = NULL;
-    change_state(fc->task, state, task_cpu(fc->task), NULL);
-}                            
 
 /*
     This function is called in "ipanema_new_prepare".
@@ -147,8 +151,8 @@ static void fifo_change_current_process(struct fifo_process *fc,
 
     The goal of this function is to initialize the 
     entity that will be used by this scheduler to schedule 
-    this task and to find the cpu on which it should starts 
-    its execution.
+    this task and to find the cpu on which it should be 
+    enqueued.
 */
 static int fifo_new_prepare(struct ipanema_policy *policy,
                 struct process_event *e)
@@ -166,17 +170,17 @@ static int fifo_new_prepare(struct ipanema_policy *policy,
     fp->task = p;
     fp->rq = NULL;
     p->ipanema.policy_metadata = fp;
-    INIT_LIST_HEAD(&fp->task_list);
 
-    /* TODO : schedule it on a core ? */
+    /* Default values */
     dst = task_cpu(p);
     dst_nr = c->rq.nr_tasks + CORE_HAVE_CURRENT(c);
-    // pr_info("new_prepare : dst cpu : %d, nr dst : %d\n", dst, dst_nr);
+
     /* Find the runqueue with the lowest number of tasks. */
-    for_each_possible_cpu(cpu) {
-        #ifdef FIFO_DEBUG
+    for_each_cpu(cpu, &online_cores) {
+#ifdef FIFO_DEBUG
         if (cpu > 2) break;
-        #endif
+#endif
+
         tmp_core = &per_cpu(core, cpu);
         dst_nr_tmp = tmp_core->rq.nr_tasks + CORE_HAVE_CURRENT(tmp_core);
         if (dst_nr_tmp < dst_nr) {
@@ -184,8 +188,6 @@ static int fifo_new_prepare(struct ipanema_policy *policy,
             dst_nr = dst_nr_tmp;
         }
     }
-
-    // pr_info("fifo_new_preapre : dst cpu : %d\n", dst);
 
     return dst;
 }
@@ -201,9 +203,8 @@ static void fifo_new_place(struct ipanema_policy *policy, struct process_event *
 {
     struct fifo_process *fp = policy_metadata(e->target);
     int cpu_dst = task_cpu(fp->task);
-    // pr_info("fifo_new_place : %d\n", cpu_dst);
-    fifo_change_queue_and_core(fp, &per_cpu(core, cpu_dst).rq, IPANEMA_READY, 
-                                    &per_cpu(core, cpu_dst));
+
+    fifo_enqueue_task(fp, &per_cpu(core, cpu_dst).rq, IPANEMA_READY);
 }
 
 /*
@@ -217,36 +218,40 @@ static void fifo_new_end(struct ipanema_policy *policy, struct process_event *e)
 static void fifo_tick(struct ipanema_policy *policy, struct process_event *e)
 {
     struct fifo_process *fp = policy_metadata(e->target);
-    // unsigned long now = ktime_get_ns();
-    // unsigned long ttl_exec_ns = now - fp->last_sched_ns;
 
-    // fp->current_quantum_ns += ttl_exec_ns;
 
     fp->current_quantum_ns += 1;
     /* Do switch there */
-    if ((fp->current_quantum_ns % QUANTUM_NS) == 0) {
+    if ((fp->current_quantum_ns % QUANTUM_MS) == 0) {
+
         /* Tasks has used its whole quantum, make it READY instead of RUNNING. */
-        fifo_change_queue(fp, &per_cpu(core, task_cpu(fp->task)).rq,
-            IPANEMA_READY_TICK);
+        fifo_enqueue_task(fp, &per_cpu(core, task_cpu(fp->task)).rq, IPANEMA_READY_TICK);
     }
 }
 
 static void fifo_yield(struct ipanema_policy *policy, struct process_event *e)
 {
     struct fifo_process *fp = policy_metadata(e->target);
-    fifo_change_queue(fp, &per_cpu(core, task_cpu(fp->task)).rq, IPANEMA_READY);
+
+    fifo_enqueue_task(fp, &per_cpu(core, task_cpu(fp->task)).rq, IPANEMA_READY);
 }
 
 static void fifo_block(struct ipanema_policy *policy, struct process_event *e)
 {
     struct fifo_process *fp = policy_metadata(e->target);
-    fifo_change_queue(fp, NULL, IPANEMA_BLOCKED); 
+    struct fifo_core *fc = &per_cpu(core, task_cpu(fp->task));
+
+    fp->state = IPANEMA_BLOCKED;
+    fp->rq = NULL;
+    fc->_current = NULL;
+    
+    change_state(fp->task, IPANEMA_BLOCKED, task_cpu(fp->task), NULL);
 }
 
 /*
     The next two functions (fifo_unblock_prepare and fifo_unblock_place) follow the 
     same design as "new_prepare" and "new_place". The "prepare" step is to find a 
-    cpu on which we can queue the task and place if for the actual queuing.
+    cpu on which we can queue the task and place for the actual queuing.
 */
 static int fifo_unblock_prepare(struct ipanema_policy *policy, struct process_event *e)
 {
@@ -254,14 +259,15 @@ static int fifo_unblock_prepare(struct ipanema_policy *policy, struct process_ev
     struct fifo_core *fc = &per_cpu(core, task_cpu(fp->task)), *tmp_core;
     int cpu, dst, dst_nr, dst_nr_tmp;
 
+    /* default values */
     dst = task_cpu(fp->task);
     dst_nr = per_cpu(core, task_cpu(fp->task)).rq.nr_tasks + CORE_HAVE_CURRENT(fc);
 
     /* Find the runqueue with the lowest number of tasks. */
-    for_each_possible_cpu(cpu) {
-        #ifdef FIFO_DEBUG
+    for_each_cpu(cpu, &online_cores) {
+#ifdef FIFO_DEBUG
         if (cpu >= 2) break;
-        #endif
+#endif
         tmp_core = &per_cpu(core, cpu);
         dst_nr_tmp = tmp_core->rq.nr_tasks + CORE_HAVE_CURRENT(tmp_core);
         if (dst_nr_tmp < dst_nr) {
@@ -278,8 +284,7 @@ static void fifo_unblock_place(struct ipanema_policy *policy, struct process_eve
     struct fifo_process *fp = policy_metadata(e->target);
     int cpu_dst = task_cpu(fp->task);
 
-    fifo_change_queue_and_core(fp, &per_cpu(core, cpu_dst).rq, IPANEMA_READY, 
-                                    &per_cpu(core, cpu_dst));
+    fifo_enqueue_task(fp, &per_cpu(core, cpu_dst).rq, IPANEMA_READY);
 }
 
 static void fifo_unblock_end(struct ipanema_policy *policy, struct process_event *e)
@@ -296,8 +301,17 @@ static void fifo_unblock_end(struct ipanema_policy *policy, struct process_event
 static void fifo_terminate(struct ipanema_policy *policy, struct process_event *e)
 {
     struct fifo_process *fp = policy_metadata(e->target);
+    struct fifo_core *fc = &per_cpu(core, task_cpu(fp->task));
 
-    fifo_change_queue(fp, NULL, IPANEMA_TERMINATED);
+
+    if (fp->state == IPANEMA_RUNNING) {
+        fc->_current = NULL;
+    }
+
+    fp->state = IPANEMA_TERMINATED;
+    fp->rq = NULL;
+    
+    change_state(fp->task, IPANEMA_TERMINATED, task_cpu(fp->task), NULL);
 
     kfree(fp);
 }
@@ -307,6 +321,7 @@ static void fifo_schedule(struct ipanema_policy *policy, unsigned int cpu)
 {
     struct task_struct *next;
     struct fifo_process *fp;
+    struct fifo_core *fc = &per_cpu(core, cpu);
     
     next = ipanema_first_task(&per_cpu(core, cpu).rq);
     if (!next) {
@@ -315,19 +330,16 @@ static void fifo_schedule(struct ipanema_policy *policy, unsigned int cpu)
     }
     
     fp = policy_metadata(next);
-    fifo_change_current_process(fp, &per_cpu(core, cpu)._current, IPANEMA_RUNNING);
+    fp->state = IPANEMA_RUNNING;
+    fp->rq = NULL;
+
+    fc->_current = fp;
+
+    change_state(fp->task, IPANEMA_RUNNING, task_cpu(fp->task), NULL);
 }
 
 static void fifo_load_balance(struct ipanema_policy *policy, struct core_event *e)
 {
-    int cpu;
-    // unsigned int nr_per_cpu[NR_CPUS], min;
-    // memset(nr_per_cpu, 0, sizeof(nr_per_cpu));
-
-
-    for_each_possible_cpu(cpu) {
-
-    }
 }
 
 /* ------------------------ Processes related functions END ------------------------ */
@@ -448,6 +460,7 @@ static int __init fifo_mod_init(void)
         c->state = IPANEMA_ACTIVE_CORE;
         /* No need for an order function as we're  FIFO. */
         init_ipanema_rq(&c->rq, FIFO, cpu, IPANEMA_READY, NULL);
+        cpumask_set_cpu(cpu, &online_cores);
     }
 
     fifo_policy = kzalloc(sizeof(struct ipanema_policy), GFP_KERNEL);

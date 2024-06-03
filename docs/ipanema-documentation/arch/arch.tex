@@ -10,3 +10,4 @@ Nous avons maintenant inséré une politique, mais aucun thread ne s'en sert ser
 
 \par{\textbf{ipanema\_current}} Cette variable est l'une des plus importantes. Elle est définie \texttt{per\_cpu}, ce qui signifie que pour tous les CPUs, il y a une variable d'allouée. Ces variables vont stocker le processus en cours d'exécution sur le coeur auquel elles appartiennent. Pour voir cela, il faut regarder la fonction \texttt{change\_state} qui gère toutes les transitions d'états d'\ipa. On peut voir que pour la transition \texttt{x -> RUNNING} (une tâche va commencer son exécution) : \texttt{per\_cpu(ipanema\_current, next\_cpu) = p} où \texttt{next\_cpu} est le CPU sur lequel la tâche va s'exécuter et \texttt{p} ladite tâche.\newline
 Il faut noter que juste avant, la fonction \texttt{change\_rq} est appelée et la tâche \texttt{p} aura été retirée de sa runqueue où elle attendait à l'état \texttt{IPANEMA\_READY}.
+

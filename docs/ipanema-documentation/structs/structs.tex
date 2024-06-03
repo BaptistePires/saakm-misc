@@ -51,3 +51,38 @@ enum ipanema_state {
 \end{lstlisting}
 
 \par \texttt{struct ipanema\_rq *rq} c'est un pointeur vers la \texttt{struct ipanema\_rq} sur laquelle la tâche s'exécute (ou va s'exécuter).
+
+\subsubsection{\texttt{struct ipanema rq}}
+Now we will take a look at the \texttt{struct ipanema\_rq}. It's the structure that represents a runqueue in \ipa, fairly simple struct made of the following fields :
+
+\begin{lstlisting}[style=CStyle]
+struct ipanema_rq {
+	enum ipanema_rq_type type;
+	union {
+		struct rb_root root;
+		struct list_head head;
+	};
+
+	/*
+	 * cpu to which this runqueue belongs (for per_cpu runqueues).
+	 * For runqueues that are not per_cpu, rq->cpu > NR_CPUS.
+	*/
+	unsigned int cpu;
+	enum ipanema_state state;
+
+	/* Number of tasks in this runqueue*/
+	unsigned int nr_tasks;
+
+	int (*order_fn)(struct task_struct *a, struct task_struct *b);
+};
+\end{lstlisting}
+
+\par \texttt{enum ipanema\_rq\_type} defines what kind of structure the runqueue will use. The enum is defined as follow : \texttt{enum ipanema\_rq\_type \{ RBTREE, LIST, FIFO \};}. As we can see, three types of runqueues are supported now. One with an red-black tree structure, one with a list and with a fifo list.
+\par The union of \texttt{struct rb\_root} and \texttt{struct list\_head} is the root of either the tree or list of tasks in this runqueue.
+\par \texttt{int cpu} is the id of the cpu this runqueue belongs to.
+\par \texttt{enum ipanema\_state} demander à Redha pour être sûr. Defines the state in which the tasks must be when added to this runqueue.
+\par \texttt{unsigned int nr\_tasks} The number of tasks currently in the runqueue.
+\par \texttt{int (*order\_fn)(struct task\_struct *a, struct task\_struct *b)} is function pointer that will be called when a task is added to the runqueue or whenever an ordering is needed. It is not mandatory for the FIFO runqueues.
+
+
+\par That concludes the part for the runqueue.
