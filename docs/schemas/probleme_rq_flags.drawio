@@ -1,0 +1,130 @@
+<mxfile host="app.diagrams.net" modified="2024-06-26T14:41:48.608Z" agent="Mozilla/5.0 (X11; Linux x86_64; rv:126.0) Gecko/20100101 Firefox/126.0" etag="byxnEJb0BMjh_n-e7kZM" version="24.6.3" type="device">
+  <diagram name="Page-1" id="S4A4evKOpGFG-w1ApVka">
+    <mxGraphModel dx="3438" dy="1365" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="850" pageHeight="1100" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-1" value="&lt;div&gt;__pick_next_task(struct rq *, struct task_struct *prev, struct rq_flags*)&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#6c8ebf;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="-835" y="252" width="390" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-4" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="alIrfEaXWc2m8NyYLCDI-2" target="alIrfEaXWc2m8NyYLCDI-3">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-2" value="&lt;div&gt;__schedule&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#6c8ebf;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="-840" y="52" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-6" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;" edge="1" parent="1" source="alIrfEaXWc2m8NyYLCDI-3" target="alIrfEaXWc2m8NyYLCDI-1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-3" value="&lt;div&gt;pick_next_task(struct rq *, struct task_struct *prev, struct rq_flags*)&lt;br&gt;&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#6c8ebf;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="-830" y="162" width="380" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-7" value="put_prev_task_balance(struct rq*, struct task_struct *prev, struct rq_flags*)" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#6c8ebf;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="-600" y="302" width="420" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-8" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=-0.002;entryY=0.562;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="alIrfEaXWc2m8NyYLCDI-1" target="alIrfEaXWc2m8NyYLCDI-7">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-11" value="&lt;div&gt;prev-&amp;gt;sched_class-&amp;gt;balance(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#b85450;fillColor=#f8cecc;" vertex="1" parent="1">
+          <mxGeometry x="-350" y="352" width="470" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-14" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.001;entryY=0.61;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="alIrfEaXWc2m8NyYLCDI-7" target="alIrfEaXWc2m8NyYLCDI-11">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-15" value="&lt;div&gt;put_prev_task(struct rq *, struct task_struct *prev)&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#6c8ebf;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="-350" y="482" width="290" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-17" value="prev-&amp;gt;sched_class-&amp;gt;put_prev_task(struct rq *rq, struct task_struct *prev)" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#b85450;fillColor=#f8cecc;" vertex="1" parent="1">
+          <mxGeometry x="-160" y="534" width="410" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-20" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=-0.001;entryY=0.495;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="alIrfEaXWc2m8NyYLCDI-15" target="alIrfEaXWc2m8NyYLCDI-17">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-21" value="ipanema_newly_idle(struct ipanema_policy *, unsigned int core, struct rq_flags *rf)" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#b85450;fillColor=#f8cecc;" vertex="1" parent="1">
+          <mxGeometry x="-90" y="402" width="460" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-22" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.498;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="alIrfEaXWc2m8NyYLCDI-11" target="alIrfEaXWc2m8NyYLCDI-21">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-23" value="policy-&amp;gt;routines-&amp;gt;newly_idle(struct ipanema_policy *, unsigned int core, struct rq_flags *rf)" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#9673a6;fillColor=#e1d5e7;" vertex="1" parent="1">
+          <mxGeometry x="160" y="462" width="500" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-24" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.001;entryY=0.463;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="alIrfEaXWc2m8NyYLCDI-21" target="alIrfEaXWc2m8NyYLCDI-23">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-25" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.003;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="alIrfEaXWc2m8NyYLCDI-7" target="alIrfEaXWc2m8NyYLCDI-15">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-26" value="&lt;div&gt;sched core&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#6c8ebf;fillColor=#dae8fc;" vertex="1" parent="1">
+          <mxGeometry x="-270" y="48" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-27" value="ipanema core" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#b85450;fillColor=#f8cecc;" vertex="1" parent="1">
+          <mxGeometry x="-270" y="88" width="100" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-28" value="&lt;div&gt;module routine&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#9673a6;fillColor=#e1d5e7;" vertex="1" parent="1">
+          <mxGeometry x="-270" y="130" width="100" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-29" value="&lt;div&gt;classes-&amp;gt;pick_next_task(struct rq *)&lt;/div&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#b85450;fillColor=#f8cecc;" vertex="1" parent="1">
+          <mxGeometry x="-600" y="580" width="210" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-30" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=-0.005;entryY=0.467;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="alIrfEaXWc2m8NyYLCDI-1" target="alIrfEaXWc2m8NyYLCDI-29">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-31" value="pick_next_task_ipanema(struct rq *rq)" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#b85450;fillColor=#f8cecc;" vertex="1" parent="1">
+          <mxGeometry x="-470" y="642" width="230" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-33" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.004;entryY=0.4;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="alIrfEaXWc2m8NyYLCDI-29" target="alIrfEaXWc2m8NyYLCDI-31">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-34" value="__pick_next_task_ipanema(struct rq *rq = rq, struct task_struct *prev = NULL, struct rq_flags *rf = NULL)" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#b85450;fillColor=#f8cecc;" vertex="1" parent="1">
+          <mxGeometry x="-330" y="702" width="580" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-35" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="alIrfEaXWc2m8NyYLCDI-31" target="alIrfEaXWc2m8NyYLCDI-34">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-36" value="" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-50" y="742" width="660" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-37" value="IF ipanema_current" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontStyle=1" vertex="1" parent="1">
+          <mxGeometry x="215" y="752" width="130" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-38" value="ipanema_yield(struct process_event *e)" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#b85450;fillColor=#f8cecc;" vertex="1" parent="1">
+          <mxGeometry x="-10" y="772" width="230" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-39" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.004;entryY=0.533;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="alIrfEaXWc2m8NyYLCDI-34" target="alIrfEaXWc2m8NyYLCDI-38">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-40" value="e-&amp;gt;target-&amp;gt;policy-&amp;gt;yield(struct ipanema_policy *policy, struct process_event *e)" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#9673a6;fillColor=#e1d5e7;" vertex="1" parent="1">
+          <mxGeometry x="150" y="822" width="440" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-41" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0.002;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="alIrfEaXWc2m8NyYLCDI-38" target="alIrfEaXWc2m8NyYLCDI-40">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-42" value="ipanema_schedule(struct ipanema_policy *policy, unsigned core = rq-&amp;gt;cpu)" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#b85450;fillColor=#f8cecc;" vertex="1" parent="1">
+          <mxGeometry x="-17.5" y="912" width="420" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-45" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=0;entryY=0.5;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="alIrfEaXWc2m8NyYLCDI-34" target="alIrfEaXWc2m8NyYLCDI-42">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-49" value="policy-&amp;gt;module_routines-&amp;gt;schedule(struct ipanema_policy *policy, unsigned int core = rq-&amp;gt;cpu)" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=#9673a6;fillColor=#e1d5e7;" vertex="1" parent="1">
+          <mxGeometry x="227.5" y="970" width="530" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-50" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;entryX=-0.001;entryY=0.567;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="1" source="alIrfEaXWc2m8NyYLCDI-42" target="alIrfEaXWc2m8NyYLCDI-49">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-51" value="pick_next_task est appelée pour choisir la prochaine tâche à exécuter" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-485" y="62" width="135" height="82" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-52" value="&lt;div&gt;__pick_next_task est là où il y a l&#39;opti pour FAIR. S&#39;il y a des tâches FAIR, on appelle directement la fonction de FAIR, sans itérer sur sched_classes&lt;/div&gt;" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-820" y="302" width="150" height="100" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-53" value="&lt;div&gt;put_prev_task_balance permet, lorsqu&#39;un coeur va devenir idle (il n&#39;y a pas de tâche prêtes) d&#39;appeler la fonction newly_idle des modules pour qu&#39;ils puissent, si possible, voler des tâches aux autres coeurs. &lt;br&gt;&lt;/div&gt;&lt;div&gt;&lt;br&gt;&lt;/div&gt;&lt;div&gt;C&#39;est dans ce chemin où on a les rq_flags, ce qui nous permet de unlock le coeur local pour pouvoir lock d&#39;autres coeurs.&lt;br&gt;&lt;/div&gt;" style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-100" y="160" width="220" height="172" as="geometry" />
+        </mxCell>
+        <mxCell id="alIrfEaXWc2m8NyYLCDI-56" value="Arriver ici, on ne donne plus la possibilité aux sched_class de unlock le coeur local. " style="whiteSpace=wrap;html=1;" vertex="1" parent="1">
+          <mxGeometry x="-590" y="712" width="140" height="70" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

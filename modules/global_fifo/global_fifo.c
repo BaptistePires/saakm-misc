@@ -1,9 +1,11 @@
-#include "fifo_one_queue.h"
+#include "global_fifo.h"
 #include "linux/cpumask.h"
 #include "linux/gfp_types.h"
 #include "linux/ipanema.h"
 #include "linux/irqflags.h"
+#include "linux/list.h"
 #include "linux/pci.h"
+#include "linux/sched.h"
 #include "linux/slab.h"
 /**
     TODO : 
@@ -16,7 +18,7 @@ MODULE_LICENSE("GPL");
 
 // #define FIFO_DEBUG 1
 /* We use a quantum of 30ms */
-#define QUANTUM_NS 20 * NSEC_PER_MSEC
+#define QUANTUM_NS (20 * NSEC_PER_MSEC)
 #define CORE_HAVE_CURRENT(c) ((c)->_current ? 1 : 0)
 
 #define ipanema_rq_of(ipanema_rq) container_of((ipanema_rq), struct fifo_rq, rq)
@@ -28,16 +30,17 @@ static const char *policy_name = "fifo_one_queue";
 /*
     Structure representing a fifo runqueue.
 */
-struct fifo_rq {
+struct global_fifo_runqueue {
     /* The actual Ipanema runqueue. */
     struct ipanema_rq rq;
 
     /* As we use only one runqueue, whenever we en/dequeue, 
         we need to lock it. */
     raw_spinlock_t lock;
+} global_fifo_runqueue;;
 
-};
-
+#define LOCK_GLOBAL_RQ() raw_spin_lock(&global_fifo_runqueue.lock);
+#define UNLOCK_GLOBAL_RQ() raw_spin_unlock(&global_fifo_runqueue.lock);
 
 /*
     Represents a process.
@@ -45,9 +48,7 @@ struct fifo_rq {
 struct fifo_process {
     int state;
     struct task_struct *task;
-
     struct fifo_rq *rq;
-
     unsigned long current_quantum_ns;
     unsigned long last_sched_ns;
     
@@ -66,18 +67,14 @@ struct fifo_core {
 
 static cpumask_t online_cores;
 static struct cpumask *idle_cores;
+
 struct {
     cpumask_t cpu;
     cpumask_t smt;
 } idle_masks;
 
-static struct fifo_rq fifo_runqueue;
-
-#define LOCK_RQ() raw_spin_lock(&fifo_runqueue.rq.lock);
-#define UNLOCK_RQ() raw_spin_unlock(&fifo_runqueue.rq.lock);
-
 DEFINE_PER_CPU(struct fifo_core, core);
-DEFINE_PER_CPU(struct ipanema_rq, local_rq);
+
 
 /* ------------------------ CPU cores related functions ------------------------ */
 
@@ -94,7 +91,7 @@ static void fifo_core_entry(struct ipanema_policy *policy, struct core_event *e)
     c->state = IPANEMA_ACTIVE_CORE;
     cpumask_set_cpu(c->id, &online_cores);
     cpumask_set_cpu(c->id, idle_cores);
-    pr_info("oui oui\n");
+    // pr_info("oui oui\n");
 }
 
 static void fifo_core_exit(struct ipanema_policy *policy, struct core_event *e)
@@ -105,119 +102,57 @@ static void fifo_core_exit(struct ipanema_policy *policy, struct core_event *e)
     cpumask_clear_cpu(c->id, idle_cores);
 }
 
-// static void fifo_newly_idle(struct ipanema_policy *policy, struct core_event *e)
-// {
-
-//     struct task_struct *next, *next_saved;
-//     struct fifo_core *local_fifo_core = &per_cpu(core, e->target);
-//     int cpu = e->target, prev_cpu;
-//     unsigned long flags;
-
-//     /* First, check local rq */
-//     local_irq_save(flags);
-
-// retry:
-//     raw_spin_lock(&per_cpu(core,cpu).rq.lock);
-//     LOCK_RQ();
-//     next = ipanema_first_task(&fifo_runqueue.rq);
-    
-//     /* No ready task, we can leave */
-//     if (!next) {
-//         pr_info("no task to migarte\n");
-//         goto unlock_local;
-//     }
-    
-//     prev_cpu = task_cpu(next);
-
-//     /* @next was scheduled on this core last time, we don't need to migrate it here,
-//      * we can just queue it in our local rq.
-//      */
-//     if (prev_cpu == cpu) {
-//         // pr_info("task found and was already on this cpu\n");
-//         change_state(next, IPANEMA_READY, cpu, &local_fifo_core->rq);
-//         goto unlock_local;
-//     }
-
-//     /* @next prev_cpu was not us, we need to migrate it to us */
-//     next_saved = next;
-//     UNLOCK_RQ();
-//     raw_spin_unlock(&per_cpu(core,cpu).rq.lock);
-
-//     LOCK_RQ();
-//     ipanema_lock_core(prev_cpu);
-    
-//     next = ipanema_first_task(&fifo_runqueue.rq);
-
-//     /* Next was scheduled on another CPU, we retry */
-//     if (!next || next != next_saved) {
-//         pr_info("task was scheduled on another cpu\n");
-//         UNLOCK_RQ();
-//         ipanema_unlock_core(prev_cpu);
-//         goto retry;
-//     }
-
-//     /* We can start to migrate it */
-//     change_state(next, IPANEMA_MIGRATING, cpu, NULL);
-//     UNLOCK_RQ();
-//     ipanema_unlock_core(prev_cpu);
-
-//     /* Now we can queue it in our local rq to schedule it when we return */
-//     raw_spin_lock(&per_cpu(core,cpu).rq.lock);
-//     LOCK_RQ();
-//     change_state(next, IPANEMA_READY, cpu, &local_fifo_core->rq);
-
-//     pr_info("task migrated\n");
-// unlock_local:
-//     UNLOCK_RQ();
-//     raw_spin_unlock(&per_cpu(core,cpu).rq.lock);
-//     local_irq_restore(flags);
-// }
-
 
 static void fifo_newly_idle(struct ipanema_policy *policy, struct core_event *e)
 {
-
     struct task_struct *next;
-    struct fifo_core *local_fifo_core = &per_cpu(core, e->target), *remote_fifo_core;
-    int cpu = e->target, prev_cpu;
-    // unsigned long flags;
-
-    /* First, check local rq */
-    // local_irq_save(flags);
+    struct fifo_process *fp;
+    unsigned int local_cpu = e->target, current_task_cpu;
     
-    LOCK_RQ();
-    next = ipanema_first_task(&fifo_runqueue.rq);
+    
+    LOCK_GLOBAL_RQ();
+    next = ipanema_first_task(&global_fifo_runqueue.rq);
 
-    if (!next)
-        goto unlock_global;
-
-    if (task_cpu(next) == cpu) {
-        raw_spin_lock(&local_fifo_core->rq.lock);
-        change_state(next, IPANEMA_READY, cpu, &local_fifo_core->rq);
-        raw_spin_unlock(&local_fifo_core->rq.lock);
-        goto unlock_global;
+    if (!next){
+        UNLOCK_GLOBAL_RQ();
+        return;
     }
 
-    prev_cpu = task_cpu(next);
-    remote_fifo_core = &per_cpu(core, prev_cpu);
+    fp = policy_metadata(next);
+    ipanema_remove_task(&global_fifo_runqueue.rq, next);
+    UNLOCK_GLOBAL_RQ();
 
-    raw_spin_lock(&remote_fifo_core->rq.lock);
-    change_state(next, IPANEMA_MIGRATING, cpu, NULL);
-    raw_spin_unlock(&remote_fifo_core->rq.lock);
 
-    raw_spin_lock(&local_fifo_core->rq.lock);
-    change_state(next, IPANEMA_READY, cpu, &local_fifo_core->rq);
-    raw_spin_unlock(&local_fifo_core->rq.lock);
+    current_task_cpu = task_cpu(next);
 
-unlock_global:
-    UNLOCK_RQ();
-    // local_irq_restore(flags);
+    if (local_cpu == current_task_cpu)
+        goto local;
+
+    ipanema_double_lock_core(local_cpu, current_task_cpu);
+
+    /* Fist we migrate it */
+    change_state(next, IPANEMA_MIGRATING, local_cpu, NULL);
+
+    /* we can release task's core */
+
+    change_state(next, IPANEMA_READY, local_cpu, &per_cpu(core, local_cpu).rq);
+    ipanema_unlock_core(current_task_cpu);
+
+    ipanema_unlock_core(local_cpu);
+
+    // pr_info("Moved one task to local rq :)\n");
+    goto unlock;
+    /* In the local case, we just add it to our local queue and it will be picked in schedule(). */
+local:
+    change_state(next, IPANEMA_READY, task_cpu(next), &per_cpu(core, local_cpu).rq);
+unlock:
+    
+    
 }
 static void fifo_enter_idle(struct ipanema_policy *policy, struct core_event *e)
 {
     per_cpu(core, e->target).state = IPANEMA_IDLE_CORE;
     cpumask_set_cpu(e->target, idle_cores);
-    pr_info("j'deviens idle\n");
 }
 
 static void fifo_exit_idle(struct ipanema_policy *policy, struct core_event *e)
@@ -225,54 +160,16 @@ static void fifo_exit_idle(struct ipanema_policy *policy, struct core_event *e)
     per_cpu(core, e->target).state = IPANEMA_ACTIVE_CORE;
     cpumask_clear_cpu(e->target, &online_cores);
     cpumask_clear_cpu(e->target, idle_cores);
-    pr_info("m'parle pas d'idle\n");
-}
-
-static void fifo_balancing_select(struct ipanema_policy *policy, struct core_event *e)
-{
 }
 
 /* ------------------------ CPU cores related functions END ------------------------ */
 /* ------------------------ Processes related // extern void ipanema_call_trace_select_cpu(int prev_cpu, int cpu, const struct cpumask *idle_cores);functions ------------------------ */
-static int select_cpu(int prev_cpu)
+
+
+static int select_cpu(struct task_struct *p, int prev_cpu)
 {
-
-    /* Find the first online and idle core, if there none matches, return previous cpu*/
-    unsigned int cpu;
-
-    LOCK_RQ();
-    if (cpumask_test_cpu(prev_cpu, idle_cores))
-        cpu = prev_cpu;
-    else
-        cpumask_any_but(idle_cores, prev_cpu);
-
-    ipanema_call_trace_select_cpu(prev_cpu, cpu, idle_cores);
-    
-    if (cpu >= nr_cpu_ids)
-        cpu = prev_cpu;
-    
-    if (cpumask_test_cpu(cpu, idle_cores)) {
-        // pr_info("cpu %d cleared\n", cpu);
-        cpumask_clear_cpu(cpu, idle_cores); 
-    }
-    
-    UNLOCK_RQ();
-    return cpu;
+    return p->pid % num_online_cpus();
 }
-
-static void fifo_enqueue_lock(struct fifo_process *fp, enum ipanema_state state)
-{
-    struct task_struct *p = fp->task;
-    struct fifo_core *fc = &per_cpu(core, task_cpu(p));
-
-    LOCK_RQ();
-    if (state == IPANEMA_RUNNING)
-        fc->_current = NULL;
-    change_state(p, state, task_cpu(p), &fifo_runqueue.rq);
-
-    UNLOCK_RQ();
-}
-
 
 /*
     This function is called in "ipanema_new_prepare".
@@ -294,15 +191,12 @@ static int fifo_new_prepare(struct ipanema_policy *policy,
     fp = kzalloc(sizeof(struct fifo_process), GFP_ATOMIC);
     if (!fp)
         return -1;
-    
+
     fp->task = p;
-    fp->rq = NULL;
+    fp->state = IPANEMA_NOT_QUEUED;
+    
     p->ipanema.policy_metadata = fp;
-
-    if (e->flags & IPANEMA_WF_EXEC)
-        return task_cpu(p);
-
-    return select_cpu(task_cpu(p));
+    return select_cpu(p, task_cpu(p));
 }
 
 /*
@@ -313,8 +207,9 @@ static int fifo_new_prepare(struct ipanema_policy *policy,
 */
 static void fifo_new_place(struct ipanema_policy *policy, struct process_event *e)
 {
-    struct fifo_process *fp = policy_metadata(e->target);
-    fifo_enqueue_lock(fp, IPANEMA_READY);
+    LOCK_GLOBAL_RQ();
+    change_state(e->target, IPANEMA_READY, task_cpu(e->target), &global_fifo_runqueue.rq);
+    UNLOCK_GLOBAL_RQ();
 }
 
 /*
@@ -328,38 +223,38 @@ static void fifo_new_end(struct ipanema_policy *policy, struct process_event *e)
 static void fifo_tick(struct ipanema_policy *policy, struct process_event *e)
 {
     struct fifo_process *fp = policy_metadata(e->target);
-    
-    fp->current_quantum_ns += 1;
-    if ((fp->current_quantum_ns % QUANTUM_NS) == 0) {
-        fifo_enqueue_lock(fp, IPANEMA_READY_TICK);
-    }
+    u64 now = ktime_get_ns();
 
+    fp->current_quantum_ns += fp->last_sched_ns - now;
+    fp->last_sched_ns = now;
+
+    if ((fp->current_quantum_ns) >= QUANTUM_NS) {
+        fp->current_quantum_ns = 0;
+
+        // copy scx, if local queue empty, queue it back 
+        if (list_empty(&per_cpu(core, e->cpu).rq.head)) {
+            change_state(e->target, IPANEMA_READY_TICK, task_cpu(e->target), &per_cpu(core, e->cpu).rq);
+            return;    
+        }
+        
+        LOCK_GLOBAL_RQ();
+        change_state(e->target, IPANEMA_READY_TICK, task_cpu(e->target), &global_fifo_runqueue.rq);
+        UNLOCK_GLOBAL_RQ();
+    }
 }
 
 static void fifo_yield(struct ipanema_policy *policy, struct process_event *e)
 {
-    struct fifo_process *fp = policy_metadata(e->target);
-    fifo_enqueue_lock(fp, IPANEMA_READY);
+    LOCK_GLOBAL_RQ();
+    change_state(e->target, IPANEMA_READY, task_cpu(e->target), &global_fifo_runqueue.rq);
+    UNLOCK_GLOBAL_RQ();
 }
 
 static void fifo_block(struct ipanema_policy *policy, struct process_event *e)
 {
-    struct fifo_process *fp = policy_metadata(e->target);
-    struct fifo_core *fc = &per_cpu(core, smp_processor_id());
-
-
-    if (fp->state != IPANEMA_RUNNING) {
-        pr_info("fp->state != IPANEMA_RUNNING! state=%d\n", fp->state);
-    } else {
-        fc->_current = NULL;
-    }
-
-    fp->state = IPANEMA_BLOCKED;
-    fp->rq = NULL;
-
-    LOCK_RQ();
-    change_state(fp->task, fp->state, task_cpu(fp->task), NULL);
-    UNLOCK_RQ()
+    LOCK_GLOBAL_RQ();
+    change_state(e->target, IPANEMA_BLOCKED, task_cpu(e->target), NULL);
+    UNLOCK_GLOBAL_RQ();
 }
 
 /*
@@ -369,14 +264,19 @@ static void fifo_block(struct ipanema_policy *policy, struct process_event *e)
 */
 static int fifo_unblock_prepare(struct ipanema_policy *policy, struct process_event *e)
 {
-    struct task_struct *p = e->target;
-    return select_cpu(task_cpu(p));
+    return task_cpu(e->target);
 }
 
 static void fifo_unblock_place(struct ipanema_policy *policy, struct process_event *e)
 {
-    struct fifo_process *fp = policy_metadata(e->target);
-    fifo_enqueue_lock(fp, IPANEMA_READY);
+        // copy scx, if local queue empty, queue it back 
+    // if (list_empty(&per_cpu(core, e->cpu).rq.head)) {
+    //     change_state(e->target, IPANEMA_READY, task_cpu(e->target), &per_cpu(core, e->cpu).rq);
+    //     return;    
+    // }
+    LOCK_GLOBAL_RQ();
+    change_state(e->target, IPANEMA_READY, global_fifo_runqueue.rq.cpu, &global_fifo_runqueue.rq);
+    UNLOCK_GLOBAL_RQ();
 }
 
 static void fifo_unblock_end(struct ipanema_policy *policy, struct process_event *e)
@@ -393,74 +293,97 @@ static void fifo_unblock_end(struct ipanema_policy *policy, struct process_event
 static void fifo_terminate(struct ipanema_policy *policy, struct process_event *e)
 {
     struct fifo_process *fp = policy_metadata(e->target);
+    struct fifo_core *fc = &per_cpu(core, task_cpu(e->target));
 
+    if (fp->state == IPANEMA_RUNNING) {
+        fc->_current = NULL;
+    }
     fp->state = IPANEMA_TERMINATED;
-    
-    // raw_spin_lock(&fifo_runqueue.rq.lock);
-    LOCK_RQ();
-    change_state(fp->task, fp->state, task_cpu(fp->task), NULL);
-    // raw_spin_unlock(&fifo_runqueue.rq.lock);
-    UNLOCK_RQ();
     fp->rq = NULL;
-    kfree(fp);
-}
 
-
-static void enqueue_running_task_fifo(struct task_struct *next, int cpu)
-{
-    struct fifo_process *fp = policy_metadata(next);
-    struct fifo_core *fc = &per_cpu(core, cpu);
-
-    fp->state = IPANEMA_RUNNING;
-    fc->_current = fp;
-    
-    change_state(fp->task, fp->state, cpu, NULL);
+    change_state(e->target, IPANEMA_TERMINATED, task_cpu(e->target), NULL);
 }
 
 static void fifo_schedule(struct ipanema_policy *policy, unsigned int cpu)
 {
     struct task_struct *next;
+    struct fifo_process *fp;
     struct fifo_core *fc = &per_cpu(core, cpu);
 
-    raw_spin_lock(&fc->rq.lock);
-    /* first, check if we got a task in the local rq, only newly_idle can put one */
-    next = ipanema_first_task(&fc->rq);
+    /* first we check local rq */
+    next = ipanema_first_task(&per_cpu(core, cpu).rq);
 
-    /* no task in local rq, check if the global */
-    if (!next) {
-        raw_spin_unlock(&fc->rq.lock);
-        goto check_global_rq;
+    if (next) {
+        // pr_info("found one :)\n");
+        fp = policy_metadata(next);
+        fp->state = TASK_RUNNING;
+        fp->rq = NULL;
+
+        fp->last_sched_ns = ktime_get_ns();
+        fp->current_quantum_ns = 0;
+
+        fc->_current = fp;
+        change_state(next, IPANEMA_RUNNING, cpu, NULL);
+        return;
     }
 
-    // pr_info("task was in local rq\n");
-    // enqueue_running_task_fifo(next, cpu);
-    change_state(next, IPANEMA_RUNNING, cpu, NULL);
-    raw_spin_unlock(&fc->rq.lock);
-    return;
+    LOCK_GLOBAL_RQ();
+    next = ipanema_first_task(&global_fifo_runqueue.rq);
 
-check_global_rq:
-    LOCK_RQ();
-    next = ipanema_first_task(&fifo_runqueue.rq);
-
-    if (!next)
+    if (!next || (task_cpu(next) != cpu)) {
         goto unlock;
-
-    /*
-     * If the next task last cpu was not us, we will try to pick it in 
-     * fifo_new_idle() after this fifo_schedule() call does not set 'current' for
-     * this cpu.
-     */
-    if (task_cpu(next) == cpu) {
-        enqueue_running_task_fifo(next, cpu);
     }
 
-    // pr_info("first task was not scheduled here bf\n");
-unlock: 
-    UNLOCK_RQ();
+    fp = policy_metadata(next);
+    fp->state = TASK_RUNNING;
+    fp->rq = NULL;
+    fp->last_sched_ns = ktime_get_ns();
+    fp->current_quantum_ns = 0;
+
+    fc->_current = fp;
+
+    change_state(next, IPANEMA_RUNNING, cpu, NULL);
+
+unlock:
+    UNLOCK_GLOBAL_RQ();
 }
 
 static void fifo_load_balance(struct ipanema_policy *policy, struct core_event *e)
 {
+
+    fifo_newly_idle(policy, e);
+//     struct task_struct *next;
+//     unsigned int local_cpu = e->target, current_task_cpu;
+
+//     LOCK_GLOBAL_RQ();
+//     next = ipanema_first_task(&global_fifo_runqueue.rq);
+
+//     if (!next)
+//         goto unlock;
+
+//     current_task_cpu = task_cpu(next);
+
+//     if (local_cpu == current_task_cpu)
+//         goto local;
+
+//     ipanema_double_lock_core(local_cpu, current_task_cpu);
+
+//     /* Fist we migrate it */
+//     change_state(next, IPANEMA_MIGRATING, local_cpu, NULL);
+
+//     /* we can release task's core */
+//     ipanema_unlock_core(current_task_cpu);
+
+//     change_state(next, IPANEMA_READY, local_cpu, &per_cpu(core, local_cpu).rq);
+//     ipanema_unlock_core(local_cpu);
+
+//     // pr_info("Moved one task to local rq :)\n");
+//     goto unlock;
+//     /* In the local case, we just add it to our local queue and it will be picked in schedule(). */
+// local:
+//     change_state(next, IPANEMA_READY, task_cpu(next), &per_cpu(core, local_cpu).rq);
+// unlock:
+//     UNLOCK_GLOBAL_RQ();
     
 }
 
@@ -506,7 +429,7 @@ struct ipanema_module_routines fifo_routines = {
     .unblock_end = fifo_unblock_end,
     .terminate = fifo_terminate,
     .schedule = fifo_schedule,
-    .balancing_select = fifo_balancing_select,
+
 
     
     /* CPU cores functions */
@@ -539,22 +462,22 @@ static int fifo_full_debug_info(struct seq_file *m,  void *p)
     char *buffer = kvmalloc(1024, GFP_KERNEL);
     int nr_written;
 
-    raw_spin_lock_irq(&fifo_runqueue.rq.lock);
-    nr = fifo_runqueue.rq.nr_tasks;
+    raw_spin_lock_irq(&global_fifo_runqueue.lock);
+    nr = global_fifo_runqueue.rq.nr_tasks;
     if (nr) {
-        tsk =  list_first_entry(&fifo_runqueue.rq.head, struct task_struct, ipanema.node_list);
+        tsk =  list_first_entry(&global_fifo_runqueue.rq.head, struct task_struct, ipanema.node_list);
         fp = (struct fifo_process *) tsk->ipanema.policy_metadata;
         nr_written = snprintf(buffer, 1024, "\t\t #%u : pid=%d comm=%s state=%x ipanema_state=%x quantum=%lu\n", 0, tsk->pid, tsk->comm, tsk->__state, fp->state, fp->current_quantum_ns);
         // seq_printf(m, "\t\t #%u : pid=%d comm=%s state=%x ipanema_state=%x quantum=%lu\n", 0, tsk->pid, tsk->comm, tsk->__state, fp->state, fp->current_quantum_ns);
     }
 
     if (nr > 1) {
-        tsk =  list_last_entry(&fifo_runqueue.rq.head, struct task_struct, ipanema.node_list);
+        tsk =  list_last_entry(&global_fifo_runqueue.rq.head, struct task_struct, ipanema.node_list);
         fp = (struct fifo_process *) tsk->ipanema.policy_metadata;
         
         nr_written += snprintf(buffer + nr_written, (1024 - nr_written), "...\n\t\t #%u : pid=%d comm=%s state=%x ipanema_state=%x quantum=%lu\n", nr - 1, tsk->pid, tsk->comm, tsk->__state, fp->state, fp->current_quantum_ns);
     }
-    raw_spin_unlock_irq(&fifo_runqueue.rq.lock);
+    raw_spin_unlock_irq(&global_fifo_runqueue.lock);
 
 
 
@@ -566,30 +489,6 @@ static int fifo_full_debug_info(struct seq_file *m,  void *p)
     if (nr_written) {
         seq_printf(m, "%s", buffer);
     }
-    // for_each_possible_cpu(cpu) {
-    //     ipanema_lock_core(cpu);
-    //     fc = &per_cpu(core, cpu);
-    //     rq = &fc->rq;
-    //     i = 0; 
-
-    //     seq_printf(m, "cpu :%d\n", cpu);
-    //     seq_printf(m, "---------------------\n");
-    //     seq_printf(m, "fifo_core struct\n");
-    //     seq_printf(m, "---------------------\n");
-    //     seq_printf(m, "\t _current : %p\n", fc->_current);
-    //     seq_printf(m, "\t state    : %d\n", fc->state);
-    //     seq_printf(m, "---------------------\n");
-    //     seq_printf(m, "ipanema_rq : \n");
-    //     seq_printf(m, "---------------------\n");
-    //     seq_printf(m, "\t nr_tasks : %x\n", rq->nr_tasks);
-    //     seq_printf(m, "\t state : %x\n", rq->state);
-
-    //     list_for_each_entry(tsk, &rq->head, ipanema.node_list) {
-    //         fp = policy_metadata(tsk);
-    //         seq_printf(m, "\t\t #%u : pid=%d comm=%s state=%x ipanema_state=%x quantum=%lu\n", i, tsk->pid, tsk->comm, tsk->__state, fp->state, fp->current_quantum_ns);
-    //     }
-    //     raw_spin_unlock(&per_cpu(core,cpu).rq);
-    // }
 
     return 0;
 }
@@ -604,13 +503,13 @@ static int __init fifo_mod_init(void)
 
 
     /* Init global rq */
-    init_ipanema_rq(&fifo_runqueue.rq, FIFO, 0, IPANEMA_READY, NULL);
-    raw_spin_lock_init(&fifo_runqueue.lock);
+    init_ipanema_rq(&global_fifo_runqueue.rq, FIFO, 0, IPANEMA_READY, 1, NULL);
+    raw_spin_lock_init(&global_fifo_runqueue.lock);
     
     idle_cores = kzalloc(cpumask_size(), GFP_KERNEL);
 
     if (!idle_cores) {
-        pr_info("Failed to allocate memory for idle_cores\n");
+        // pr_info("Failed to allocate memory for idle_cores\n");
         return -ENOMEM;
     }
        
@@ -624,7 +523,7 @@ static int __init fifo_mod_init(void)
         c->state = IPANEMA_ACTIVE_CORE;
         cpumask_set_cpu(cpu, &online_cores);
         cpumask_set_cpu(cpu, idle_cores);
-        init_ipanema_rq(&c->rq, FIFO, cpu, IPANEMA_READY, NULL);
+        init_ipanema_rq(&c->rq, FIFO, cpu, IPANEMA_READY, 0, NULL);
         /* No need for an order function as we're  FIFO. */
         ++cpt;
     }
