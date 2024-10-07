@@ -1,3 +1,5 @@
+#include "linux/lockdep.h"
+#include "linux/smp.h"
 #include <linux/module.h>
 #include <linux/ipanema.h>
 #include <linux/slab.h>
@@ -8,7 +10,6 @@
  * There is one runqueue per core, where a process is spawned (whether it was 
  * forked or switched sched class), it searches for the cpu with the least
  * tasks enqueued and picks it.
- * cmd_test : ./ipastart 0 phoronix-test-suite run compress-7zip
  */
 
 MODULE_AUTHOR("Baptiste Pires, LIP6");
@@ -44,9 +45,9 @@ struct fifo_core {
     enum ipanema_core_state state; /* Core state */
     int id; /* core id (== cpu id) */
     
-    struct fifo_process *_current; /* process being executed */
+    struct fifo_process *_current; /* the current process executing on this core */
 
-    struct ipanema_rq rq;  /* runqueue allocated to this core. */
+    struct ipanema_rq rq;  /* The runqueue allocated to this core. */
 
 
 };
@@ -105,7 +106,40 @@ static void fifo_enter_idle(struct ipanema_policy *policy, struct core_event *e)
 /*
  * We're leaving the idle state. Can happens when we were idle and a task picks
  * this core to be enqueued on.
- */e->flags
+ */
+static void fifo_exit_idle(struct ipanema_policy *policy, struct core_event *e)
+{
+    per_cpu(core, e->target).state = IPANEMA_ACTIVE_CORE;
+
+}
+
+static void fifo_balancing_select(struct ipanema_policy *policy, struct core_event *e)
+{
+
+}
+
+/* ------------------------ CPU cores related functions END ------------------------ */
+
+/* ------------------------ Processes related functions ------------------------ */
+
+static int select_cpu(struct task_struct *p, int prev_cpu, int wake_flags)
+{
+    // if (wake_flags & IPANEMA_WF_EXEC)
+        // return prev_cpu;
+    return 0;
+    // return p->pid % num_online_cpus();
+}
+/*
+ * Helper function used to enqueue a task @fp when state is IPANEMA_READY
+ * or IPANEMA_READY_TICK.
+ */
+static void fifo_enqueue_task(struct fifo_process *fp, struct ipanema_rq *next_rq, 
+                                    int state)
+{
+    /* The current core on which the process is or will be */
+    struct fifo_core *fc = &per_cpu(core, task_cpu(fp->task));
+
+    /*
         * When switching from IPANEMA_RURNNING to IPANEMA_READY_TICK,
         * the process was removed from the cpu and we need to update it
         * for our core.
@@ -145,7 +179,7 @@ static int fifo_new_prepare(struct ipanema_policy *policy,
     fp->task = p;
     fp->rq = NULL;
     p->ipanema.policy_metadata = fp;
-
+    // pr_info("new task : pid:%d comm:%s\n", p->pid, p->comm);
     return select_cpu(p, task_cpu(p), 0);
 }
 
@@ -179,7 +213,6 @@ static void fifo_tick(struct ipanema_policy *policy, struct process_event *e)
     u64 now = ktime_get_ns();
     fp->current_quantum_ns += now - fp->last_sched_ns;
     fp->current_quantum_ns += 1;
-    
     /* Do switch there */
     if (fp->current_quantum_ns >= QUANTUM_NS) {
         fp->current_quantum_ns = 0;
@@ -405,7 +438,7 @@ static int __init fifo_mod_init(void)
         c->id = cpu;
         c->state = IPANEMA_ACTIVE_CORE;
         /* No need for an order function as we're  FIFO. */
-        init_ipanema_rq(&c->rq, FIFO, cpu, IPANEMA_READY, NULL);
+        init_ipanema_rq(&c->rq, FIFO, cpu, IPANEMA_READY,  NULL);
         cpumask_set_cpu(cpu, &online_cores);
     }
 

@@ -217,7 +217,6 @@ static void fifo_enter_idle(struct ipanema_policy *policy, struct core_event *e)
 {
     per_cpu(core, e->target).state = IPANEMA_IDLE_CORE;
     cpumask_set_cpu(e->target, idle_cores);
-    pr_info("j'deviens idle\n");
 }
 
 static void fifo_exit_idle(struct ipanema_policy *policy, struct core_event *e)
@@ -225,7 +224,6 @@ static void fifo_exit_idle(struct ipanema_policy *policy, struct core_event *e)
     per_cpu(core, e->target).state = IPANEMA_ACTIVE_CORE;
     cpumask_clear_cpu(e->target, &online_cores);
     cpumask_clear_cpu(e->target, idle_cores);
-    pr_info("m'parle pas d'idle\n");
 }
 
 static void fifo_balancing_select(struct ipanema_policy *policy, struct core_event *e)
