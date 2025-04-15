@@ -23,13 +23,14 @@ void child_fn(void)
         for (unsigned int j = 0; j < nr_children; ++j) {
                 if ((pid = fork())) {
                         subchild_fn();
-                        return;
+                        goto out;
                 }
         }
 
         for (unsigned int j = 0; j < nr_children; ++j) {
                 wait(NULL);
         }
+out:
 
 }
 
@@ -45,7 +46,7 @@ int main(int argc, char** argv)
         for (unsigned int i = 0; i < nr_children; ++i) {
                 if ((pid = fork()) == 0) {
                        child_fn();
-                        return;
+                        return 1;
                 }
         }
 
