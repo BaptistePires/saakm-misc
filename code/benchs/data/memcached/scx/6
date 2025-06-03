@@ -1,0 +1,81 @@
+
+
+
+Memcached 1.6.19:
+    pts/memcached-1.2.0
+    System Test Configuration
+        [1m1: [0m1:100
+        [1m2: [0m1:10
+        [1m3: [0m1:5
+        [1m4: [0m1:1
+        [1m5: [0m5:1
+        [1m6: [0mTest All Options
+        [1;30m** Multiple items can be selected, delimit by a comma. **[0m
+
+
+[1;32mPhoronix Test Suite v10.8.4[0m
+[1;32mSystem Information[0m
+
+
+  [1;30mPROCESSOR[0m:              [1;32mIntel Core i9-10900K @ 5.30GHz[0m
+    [1mCore Count[0m:           10                                                
+    [1mThread Count[0m:         20                                                
+    [1mExtensions[0m:           SSE 4.2 + AVX2 + AVX + RDRAND + FSGSBASE          
+    [1mCache Size[0m:           20 MB                                             
+    [1mMicrocode[0m:            0xfc                                              
+    [1mCore Family[0m:          Comet Lake                                        
+    [1mScaling Driver[0m:       intel_pstate powersave (EPP: balance_performance) 
+
+  [1;30mGRAPHICS[0m:               [1;32mAMD Radeon Pro W5500 8GB[0m
+    [1mFrequency[0m:            1200MHz          
+
+  [1;30mMOTHERBOARD[0m:            [1;32mDell Precision 3650 Tower [0NDYHG][0m
+    [1mBIOS Version[0m:         1.5.2              
+    [1mChipset[0m:              Intel Tiger Lake-H 
+    [1mAudio[0m:                Intel Device f0c8  
+    [1mNetwork[0m:              Intel              
+
+  [1;30mMEMORY[0m:                 [1;32m2 x 32 GB DDR4-2933MT/s HMAA4GU6AJR8N-XN[0m
+
+  [1;30mDISK[0m:                   [1;32m1024GB SK hynix PC711 NVMe 1TB + 4001GB TOSHIBA MG08ADA4[0m
+    [1mFile-System[0m:          ext4                          
+    [1mMount Options[0m:        errors=remount-ro relatime rw 
+    [1mDisk Scheduler[0m:       NONE                          
+    [1mDisk Details[0m:         Block Size: 4096              
+
+  [1;30mOPERATING SYSTEM[0m:       [1;32mDebian 12[0m
+    [1mKernel[0m:               6.12.0saakm+ (x86_64)                                                                                                                      
+    [1mCompiler[0m:             GCC 12.2.0 + Clang 14.0.6 + LLVM 14.0.6                                                                                                    
+    [1mSecurity[0m:             gather_data_sampling: Mitigation of Microcode                                                                                              
+    [1m [0m                     + itlb_multihit: KVM: Mitigation of Split huge pages                                                                                       
+    [1m [0m                     + l1tf: Not affected                                                                                                                       
+    [1m [0m                     + mds: Not affected                                                                                                                        
+    [1m [0m                     + meltdown: Not affected                                                                                                                   
+    [1m [0m                     + mmio_stale_data: Mitigation of Clear buffers; SMT vulnerable                                                                             
+    [1m [0m                     + reg_file_data_sampling: Not affected                                                                                                     
+    [1m [0m                     + retbleed: Mitigation of Enhanced IBRS                                                                                                    
+    [1m [0m                     + spec_rstack_overflow: Not affected                                                                                                       
+    [1m [0m                     + spec_store_bypass: Mitigation of SSB disabled via prctl                                                                                  
+    [1m [0m                     + spectre_v1: Mitigation of usercopy/swapgs barriers and __user pointer sanitization                                                       
+    [1m [0m                     + spectre_v2: Mitigation of Enhanced / Automatic IBRS; IBPB: conditional; RSB filling; PBRSB-eIBRS: SW sequence; BHI: SW loop KVM: SW loop 
+    [1m [0m                     + srbds: Mitigation of Microcode                                                                                                           
+    [1m [0m                     + tsx_async_abort: Not affected                                                                                                            
+
+    [1mWould you like to save these test results (Y/n): [0m
+[1;36mMemcached 1.6.19:
+    pts/memcached-1.2.0 [Set To Get Ratio: 1:1][0m
+    Test 1 of 1
+    Estimated Trial Run Count:    1                     
+    Estimated Time To Completion: 2 Minutes [13:44 UTC] 
+        Started Run 1 @ 13:42:53
+
+    Set To Get Ratio: 1:1:
+        2602674.29
+
+    Average: [1;34m2602674.29 Ops/sec[0m
+    Samples: 1
+
+    Comparison of [1m89[0m OpenBenchmarking.org samples since [1m25 March 2023[0m to [1m5 November[0m; median result: [1m1247616 Ops/sec[0m. Box plot of samples:
+    [  |--------------###!###############[0;31m*[0m------------------------------------|]
+                  [0;31mRyzen 9 7950X: 2179060 ^[0m
+
