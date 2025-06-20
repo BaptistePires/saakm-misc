@@ -118,7 +118,7 @@ static void tuner_step(void)
 
 	//for stats
 	cpumask_t *dom_already_done =
-		kzalloc(sizeof(cpumask_size()), GFP_KERNEL);
+		kzalloc(cpumask_size(), GFP_KERNEL);
 	struct kernel_cpustat kcpustat;
 	u64 *cpustat;
 
@@ -947,22 +947,24 @@ static int __init init_sched(void)
 	struct rusty_core *c;
 
 	/* cpumasks clean alloc */
-	cpumask_t *domain_done = kzalloc(sizeof(cpumask_size()), GFP_KERNEL);
-	all_cpumask = kzalloc(sizeof(cpumask_size()), GFP_KERNEL);
-	direct_greedy_cpumask = kzalloc(sizeof(cpumask_size()), GFP_KERNEL);
-	kick_greedy_cpumask = kzalloc(sizeof(cpumask_size()), GFP_KERNEL);
+	cpumask_t *domain_done = kzalloc(cpumask_size(), GFP_KERNEL);
+	all_cpumask = kzalloc(cpumask_size(), GFP_KERNEL);
+	direct_greedy_cpumask = kzalloc(cpumask_size(), GFP_KERNEL);
+	kick_greedy_cpumask = kzalloc(cpumask_size(), GFP_KERNEL);
 
+	pr_info("after alloc cpumasks\n");
 	cpumask_clear(domain_done);
 	cpumask_clear(direct_greedy_cpumask);
 	cpumask_clear(kick_greedy_cpumask); //not useful right now
 	cpumask_clear(all_cpumask);
-
+	pr_info("after clearing cpumasks\n");
 	nr_doms = 0;
 
 	/* i made different loops but it would be better to have just one big loop that
     does everything  
     */
 
+	pr_info("after clearing cpumasks and before loop\n");
 	/* loop that creates rusty cores for each CPUs */
 	for_each_possible_cpu(cpu) {
 		c = &per_cpu(core, cpu);
@@ -987,14 +989,15 @@ static int __init init_sched(void)
 		cpumask_set_cpu(cpu, &idle_masks.cpu);
 		cpumask_set_cpu(cpu, all_cpumask);
 	}
-
+	pr_info("after loop that creates rusty cores\n");
 	/* loop that round-robins the domains
     * to do kind of like them, my dom_ctx contains the id of a domain and a *topology_level 
     * so i have the cores of that domain
     * maybe dom_ctx should only contains a cpumask but since i didn't really get how the topology_level works with NUMA
     * i left it like that    
     */
-	for_each_possible_cpu(cpu) {
+    pr_info("before second loop\n");
+    for_each_possible_cpu(cpu) {
 		struct topology_level *l = per_cpu(topology_levels, cpu);
 		if (!l) {
 			return -ENOENT;
@@ -1028,7 +1031,7 @@ static int __init init_sched(void)
 			nr_doms++;
 		}
 	}
-
+	pr_info("after second loop that round robins the domains and before tunner\n");
 	//kthread for tuner
 	tuner_thread = kthread_run(tuner_fn, NULL, "tuner_thread");
 
@@ -1036,10 +1039,11 @@ static int __init init_sched(void)
 	rusty_policy = kzalloc(sizeof(struct ipanema_policy), GFP_KERNEL);
 	rusty_policy->kmodule = THIS_MODULE;
 	rusty_policy->routines = &rusty_routines;
+	pr_info("before strcpy\n");
 	strncpy(rusty_policy->name, policy_name, MAX_POLICY_NAME_LEN);
-
+	pr_info("after strcpy\n");
 	res = ipanema_add_policy(rusty_policy);
-
+	pr_info("after_add");
 	if (res) {
 		kfree(rusty_policy);
 	}
