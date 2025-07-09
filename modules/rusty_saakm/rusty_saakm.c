@@ -20,8 +20,8 @@ MODULE_AUTHOR("Raïssa Bouri, lip6");
 MODULE_LICENSE("GPL");
 MODULE_DESCRIPTION("rusty saakmed");
 
-#define SLICE_NS 20 * 1000000
-#define MAX_DOMS 15
+#define SLICE_NS 20000000ULL
+#define MAX_DOMS 64
 #define PICK_IDLE_CORE 1LLU << 0
 
 /* for the tuner */
@@ -343,6 +343,34 @@ static cpumask_t *get_idle_cpumask(void)
 		return &idle_masks.cpu;
 }
 
+static s32 pick_idle_cpu(const struct cpumask *cpus_allowed, u64 flags)
+{
+	int cpu;
+
+retry:
+	if (ipanema_smt_active()) {
+		cpu = cpumask_any_and_distribute(&idle_masks.smt, cpus_allowed);
+
+		if (cpu < nr_cpu_ids)
+			goto found;
+
+		if (flags & PICK_IDLE_CORE)
+			return -EBUSY;
+	}
+
+	cpu = cpumask_any_and_distribute(&idle_masks.cpu, cpus_allowed);
+	if (cpu >= nr_cpu_ids) {
+		return -EBUSY;
+	}
+found:
+
+	if (test_and_clear_cpu_idle(cpu)) {
+		return cpu;
+	} else
+		goto retry;
+	;
+}
+
 static int pick_any_cpu(const struct cpumask *cpus_allowed, u64 flags)
 {
 	int cpu;
@@ -351,7 +379,7 @@ static int pick_any_cpu(const struct cpumask *cpus_allowed, u64 flags)
     */
 
 	if (idle_enabled) {
-		cpu = pick_any_cpu(cpus_allowed, flags);
+		cpu = pick_idle_cpu(cpus_allowed, flags);
 		if (cpu >= 0)
 			return cpu;
 	}
@@ -367,11 +395,11 @@ static s32 try_sync_wakeup(struct task_struct *p, struct rusty_process *rp,
 			   s32 prev_cpu)
 {
 	int cpu;
-	struct rusty_core *c = kzalloc(sizeof(struct rusty_core), GFP_KERNEL);
-	struct dom_ctx *domc = kzalloc(sizeof(struct dom_ctx), GFP_KERNEL);
+	struct rusty_core *c;
+	struct dom_ctx *domc;
 	cpumask_t *d_cpumask, *idle_cpumask;
-	d_cpumask = kzalloc(sizeof(cpumask_size()), GFP_KERNEL);
-	idle_cpumask = kzalloc(sizeof(cpumask_size()), GFP_KERNEL);
+	// d_cpumask = kzalloc(sizeof(cpumask_size()), GFP_KERNEL);
+	// idle_cpumask = kzalloc(sizeof(cpumask_size()), GFP_KERNEL);
 
 	bool share_llc, has_idle;
 
@@ -404,41 +432,14 @@ err_out:
 	return cpu;
 }
 
-static s32 pick_idle_cpu(const struct cpumask *cpus_allowed, u64 flags)
-{
-	int cpu;
 
-retry:
-	if (ipanema_smt_active()) {
-		cpu = cpumask_any_and_distribute(&idle_masks.smt, cpus_allowed);
-
-		if (cpu < nr_cpu_ids)
-			goto found;
-
-		if (flags & PICK_IDLE_CORE)
-			return -EBUSY;
-	}
-
-	cpu = cpumask_any_and_distribute(&idle_masks.cpu, cpus_allowed);
-	if (cpu >= nr_cpu_ids) {
-		return -EBUSY;
-	}
-found:
-
-	if (test_and_clear_cpu_idle(cpu)) {
-		return cpu;
-	} else
-		goto retry;
-	;
-}
 
 /* I put the same comments as Rusty as a landmark  */
 static int rusty_select_cpu(struct rusty_process *rp, struct task_struct *p,
 			    int prev_cpu, int wake_flags)
 {
-	const struct cpumask *idle_smtmask =
-		kzalloc(sizeof(cpumask_size()), GFP_KERNEL);
-	struct cpumask *p_cpumask = kzalloc(sizeof(cpumask_size()), GFP_KERNEL);
+	const struct cpumask *idle_smtmask;
+	struct cpumask *p_cpumask;
 
 	s32 cpu;
 	bool has_idle_cores, prev_domestic;
@@ -479,11 +480,12 @@ static int rusty_select_cpu(struct rusty_process *rp, struct task_struct *p,
 		}
 	}
 
-	/*prev cpu won't do
-    looking for an idle cpu we can directly dispatch the task to
-    first : look for best idle domestic cpu
-    and then move onto foreign
-    */
+	/*
+		prev cpu won't do
+		looking for an idle cpu we can directly dispatch the task to
+		first : look for best idle domestic cpu
+		and then move onto foreign
+	*/
 
 	//if there's a domestic idle core then dispatch directly
 	if (has_idle_cores) {
@@ -931,6 +933,7 @@ static int tuner_fn(void *arg)
         */
 		msleep(100);
 	}
+	pr_info("Tuner thread stopped\n");;
 	return 0;
 }
 

@@ -18,8 +18,8 @@ MODULE_LICENSE("GPL");
 
 // #define FIFO_DEBUG 1
 
-#define QUANTUM_MS 20
-#define QUANTUM_NS 20 * 1000000
+#define QUANTUM_MS 20000000ULL
+#define QUANTUM_NS 20000000ULL
 #define CORE_HAVE_CURRENT(c) ((c)->_current ? 1 : 0)
 
 // extern atomic64_t __nr_ipanema_running;
