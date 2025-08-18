@@ -74,3 +74,19 @@ for i in $(seq 1 $nr); do
 	done
 	
 done
+
+
+for i in $(seq 1 $nr); do
+
+	while IFS=';' read bench bench_cmd input_file; do 
+		mkdir -p $outdir/$bench/$sched_str
+		cmd="$sched 0 ${bench_cmd} < $input_file"
+		sysctl vm.drop_caches=3
+		file_name=$outdir/$bench/$sched_str/$i
+		echo $cmd
+                (trace-cmd record -e sched:* -o $file_name $cmd) | tee logs
+
+		echo "done $i/$nr"
+	done < ./benchmarks_cmds
+	
+done

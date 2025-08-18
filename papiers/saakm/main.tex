@@ -1,0 +1,37 @@
+\documentclass[9pt]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[a4paper, margin=3cm]{geometry}
+\usepackage{xcolor}
+\usepackage[style=numeric,backend=bibtex]{biblatex}
+\usepackage{multicol}
+
+% Commands
+\newcommand{\note}[1]{\textcolor{red}{\textit{[#1]}}}
+\newcommand{\todo}[1]{\textcolor{blue}{\textit{[#1]}}}
+
+
+\addbibresource{biblio.bib}
+
+\title{Article SaaKM}
+
+\author{
+        Dubois Swan \and Gouicem Redha \and Pires Baptiste \and Sopena Julien
+}
+
+\begin{document}
+        
+        \maketitle
+
+        \begin{multicols}{2}
+                
+                        \input{abstract.tex}
+                        \input{introduction.tex}
+                        \input{background.tex}
+                        \input{saakm.tex}
+                
+        \end{multicols}
+
+
+        \printbibliography
+\end{document}

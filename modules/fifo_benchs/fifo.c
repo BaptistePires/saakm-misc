@@ -115,9 +115,10 @@ static void fifo_exit_idle(struct ipanema_policy *policy, struct core_event *e)
 	per_cpu(core, e->target).state = IPANEMA_ACTIVE_CORE;
 }
 
-static void fifo_balancing_select(struct ipanema_policy *policy,
+static int fifo_balancing_select(struct ipanema_policy *policy,
 				  struct core_event *e)
 {
+	return 0;
 }
 
 /* ------------------------ CPU cores related functions END ------------------------ */
@@ -126,8 +127,8 @@ static void fifo_balancing_select(struct ipanema_policy *policy,
 
 static int select_cpu(struct task_struct *p, int prev_cpu, int wake_flags)
 {
-	/*if (wake_flags & IPANEMA_WF_EXEC)*/
-	/*	return prev_cpu;*/
+	if (wake_flags & IPANEMA_WF_EXEC)
+		return prev_cpu;
 
 	return p->pid % num_online_cpus();
 }
@@ -185,7 +186,7 @@ static int fifo_new_prepare(struct ipanema_policy *policy,
 	/*pr_info("new task : pid:%d comm:%s\n", p->pid, p->comm);*/
 	//
 	/*return select_cpu(p, task_cpu(p), e->flags);*/
-	return select_cpu(p, task_cpu(p), 0);
+	return select_cpu(p, task_cpu(p), e->flags);
 }
 
 /*
@@ -333,11 +334,6 @@ static void fifo_schedule(struct ipanema_policy *policy, unsigned int cpu)
 	change_state(fp->task, IPANEMA_RUNNING, task_cpu(fp->task), NULL);
 }
 
-static void fifo_load_balance(struct ipanema_policy *policy,
-			      struct core_event *e)
-{
-}
-
 /* ------------------------ Processes related functions END ------------------------ */
 
 /* ------------------------ Module related functions ------------------------ */
@@ -380,7 +376,6 @@ struct ipanema_module_routines fifo_routines = {
 	.unblock_end = fifo_unblock_end,
 	.terminate = fifo_terminate,
 	.schedule = fifo_schedule,
-	.balancing_select = fifo_balancing_select,
 
 	/* CPU cores functions */
 	.get_core_state = fifo_get_core_state,
@@ -389,7 +384,7 @@ struct ipanema_module_routines fifo_routines = {
 	.newly_idle = fifo_newly_idle,
 	.enter_idle = fifo_enter_idle,
 	.exit_idle = fifo_exit_idle,
-	.balancing_select = fifo_load_balance,
+	.balancing_select = fifo_balancing_select,
 
 	/* Policy related functions */
 	.init = fifo_init,

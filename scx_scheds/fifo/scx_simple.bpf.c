@@ -56,7 +56,7 @@ s32 BPF_STRUCT_OPS(simple_select_cpu, struct task_struct *p, s32 prev_cpu, u64 w
 {
 	u32 cpu = prev_cpu;
 
-	cpu = ((unsigned int)p->pid) % 20;
+	cpu = ((unsigned int)p->pid) % 8;
 
 	return cpu;
 }
@@ -122,7 +122,7 @@ void BPF_STRUCT_OPS(simple_enable, struct task_struct *p)
 
 s32 BPF_STRUCT_OPS_SLEEPABLE(simple_init)
 {
-	return scx_bpf_create_dsq(SHARED_DSQ, -1);
+	return 0;
 }
 
 void BPF_STRUCT_OPS(simple_exit, struct scx_exit_info *ei)
@@ -133,11 +133,18 @@ void BPF_STRUCT_OPS(simple_exit, struct scx_exit_info *ei)
 void BPF_STRUCT_OPS(simple_update_idle, s32 cpu, bool idle)
 {}
 
+void BPF_STRUCT_OPS(simple_dequeue, struct task_struct *p, u64 deq_flags)
+{}
+
+void BPF_STRUCT_OPS(simple_dispatch, s32 cpu, struct task_struct *p)
+{}
 
 
 SCX_OPS_DEFINE(simple_ops,
 	       .select_cpu		= (void *)simple_select_cpu,
 	       .enqueue			= (void *)simple_enqueue,
+	       .dequeue			= (void *)simple_dequeue,
+	       .dispatch		= (void *)simple_dispatch,
 	       .running			= (void *)simple_running,
 	       .stopping		= (void *)simple_stopping,
 	       .enable			= (void *)simple_enable,
