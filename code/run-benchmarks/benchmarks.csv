@@ -1,2 +1,4 @@
-blender;phoronix-test-suite run blender FORCE_TIMES_TO_RUN=1 NO_COLOR=TRUE;inputs/input_blender.txt
-cloverleaf;phoronix-test-suite run cloverleaf FORCE_TIMES_TO_RUN=1 NO_COLOR=TRUE;inputs/input_cloverleaf.txt
+cassandra;phoronix-test-suite run cassandra FORCE_TIMES_TO_RUN=1 NO_COLOR=TRUE;inputs/input_cassandra.txt
+stress-ng;phoronix-test-suite run stress-ng FORCE_TIMES_TO_RUN=1 NO_COLOR=TRUE;inputs/input_stress-ng.txt
+clickhouse;phoronix-test-suite run clickhouse FORCE_TIMES_TO_RUN=1 NO_COLOR=TRUE;inputs/input_clickhouse.txt
+

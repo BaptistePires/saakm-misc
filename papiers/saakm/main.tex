@@ -5,6 +5,10 @@
 \usepackage{xcolor}
 \usepackage[style=numeric,backend=bibtex]{biblatex}
 \usepackage{multicol}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{xparse}
 
 % Commands
 \newcommand{\note}[1]{\textcolor{red}{\textit{[#1]}}}
@@ -23,14 +27,16 @@
         
         \maketitle
 
-        \begin{multicols}{2}
+        % \begin{multicols}{2}
                 
                         \input{abstract.tex}
                         \input{introduction.tex}
                         \input{background.tex}
                         \input{saakm.tex}
+
+                        \input{evaluation.tex}
                 
-        \end{multicols}
+        % \end{multicols}
 
 
         \printbibliography
