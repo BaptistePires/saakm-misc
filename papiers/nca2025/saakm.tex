@@ -1,0 +1,58 @@
+\section{Scheduler as a Kernel Module}
+\label{sec:scheduler-as-a-kernel-module}
+
+\par We present \textit{Scheduler as a Kernel Module} (SaaKM), a framework that allows kernel developers to write schedulers as Linux kernel modules. Our main goal is to provide a way to write, test and deploy schedulers easily. To do so, we hide the complexity of the core scheduler (synchronization mecanisms, complex API) behind a set of functions corresponding to scheduling events that each scheduling policy must implement. We are also capable to have multiple policies loaded at the same time, allowing each applications to chose the scheduler that best fits its needs.
+
+\paragraph{Design}
+\par We rely on the \textit{sched\_class} API presented above to implement a minimal core scheduler (less than 1500 LoC) that will only be used to register policies and call callbacks at the right places. To not interfer with the existing schedulers such as EEVDF or sched\_ext, we place our scheduling class right before the idle one.\\ Each policy must implement a set of functions that map to specific scheduling events (e.g wakeup, scheduling tick, ...) and then register itself to our scheduling class. To not interfer with the existing schedulers such as EEVDF or sched\_ext, we place our scheduling class right before the idle one.\\
+\par{} There are two types of events. The \textit{thread events} and \textit{core events}. Table \ref{tab:saakm-callbacks} shows some examples of these events and their descriptions. We devided the selection of a CPU and the actual enqueuing in the runqueue in two steps. This is needed when a task is newly created task is woken up for the first time. In a first time, it locks the task and calls \texttt{new\_prepare} which returns the CPU. At this point, our scheduler sees the task for the first time, it needs to initialize and allocated metadata for it. Only then, the runqueue of the CPU is locked and \texttt{new\_place} is called to actually enqueue the task. Thanks to this architecture, we are able to hide the complexity of the syncrhonization mechanisms to the user.
+
+\begin{table}[htbp]
+\caption{Table Type Styles}
+\begin{center}
+\begin{tabular}{|c|c|c|c|}
+\hline
+\textbf{Table}&\multicolumn{3}{|c|}{\textbf{Table Column Head}} \\
+\cline{2-4} 
+\textbf{Head} & \textbf{\textit{Table column subhead}}& \textbf{\textit{Subhead}}& \textbf{\textit{Subhead}} \\
+\hline
+copy& More table copy$^{\mathrm{a}}$& &  \\
+\hline
+\multicolumn{4}{l}{$^{\mathrm{a}}$Sample of a Table footnote.}
+\end{tabular}
+\label{tab1}
+\end{center}
+\end{table}
+\begin{table}[htbp]
+        \centering
+        \begin{tabular}{|c|c|}
+        % \toprule
+        \hline
+        \textbf{Function} & \textbf{Description} \\
+        % \midrule
+        \hline
+                \textbf{Thread events} & \\
+                \hline
+                \texttt{new\_prepare(p)} & Return CPU id where \texttt{p} should run\\
+                \texttt{new\_place(task, core)} & Insert \texttt{p} into \texttt{core} runqueue\\
+                % \texttt{unblock\_place(task)} & Retourne l'identifiant du CPU où doit être insérée \texttt{task}\\
+                % \texttt{unblock\_prepare(task)} & Insère \texttt{task} dans la runqueue de \texttt{core}\\
+        
+                \hline
+                \textbf{Core events} & \\
+                \hline
+                \texttt{schedule(core)} & Called when a task must be elected\\
+                \texttt{newly\_idle(core)} & Called right after \texttt{schedule}\\
+        % \bottomrule
+        \hline
+        \end{tabular}
+        \caption{Some \texttt{saakm\_module\_routines} functions and their description.}
+\label{tab:saakm-callbacks}
+\end{table}
+
+% \begin{itemize}
+        % \item[-]{Task events} are all events related to task, such as : a blocking task, a task waking up.
+        % \item[-]{Core events} are all events related to the CPUs, such as : a scheduling tick, a CPU becoming idle.
+% \end{itemize}
+% \par 
+% In order to hide the complexity of the locks mecanisms and make it invisible to the user, we have to make the selection of a CPU and the actual enqueuing in two step. This is needed when a task \textit{p} is for waking up on CPU_0 but the scheduler decides that it should now run on CPU_1. Firstly, we need to lock CPU_0 to completly remove \textit{p} before we can enqueue it on CPU_1. \note{reecrire}

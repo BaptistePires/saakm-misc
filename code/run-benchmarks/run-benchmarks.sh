@@ -49,9 +49,13 @@ while IFS=';' read name command input_file; do
             exit 1
         fi
 
+        # specify output file for schbench
+        
+
         for i in $(seq 1 $NR_RUNS); do
                 output_file="${benchmark_ouput_dir}/$((i + FILENAME_NR_SHIFT)).txt"
-
+                command="${command} -j ${benchmark_ouput_dir}/$i.json"
+                echo $command   
                 clear_caches
                 $schedstart_bin $scheduler_framework 0 $command < $input_file | tee $output_file
 

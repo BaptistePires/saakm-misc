@@ -1,0 +1,53 @@
+\documentclass[conference]{IEEEtran}
+\IEEEoverridecommandlockouts
+% The preceding line is only needed to identify funding in the first footnote. If that is unneeded, please comment it out.
+\usepackage{cite}
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+    T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
+
+
+
+\usepackage[T1]{fontenc}
+\usepackage[a4paper, margin=3cm]{geometry}
+\usepackage{xcolor}
+% \usepackage[style=numeric,backend=biber]{biblatex}
+\usepackage{multicol}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage[table,xcdraw]{xcolor}
+\usepackage{xparse}
+\usepackage{hyperref}
+
+% Commands
+\newcommand{\note}[1]{\textcolor{red}{\textit{[#1]}}}
+\newcommand{\todo}[1]{\textcolor{blue}{\textit{[#1]}}}
+
+
+% \addbibresource{biblio.bib}
+
+\title{Article SaaKM}
+
+\author{
+        Dubois Swan \and Gouicem Redha \and Pires Baptiste \and Sopena Julien
+}
+
+\bibliography{biblio.bib}
+\begin{document}
+        
+        \maketitle
+
+        % \begin{multicols}{2}
+                
+                        \input{abstract.tex}
+                        \input{introduction.tex}
+                        \input{background.tex}
+                        \input{saakm.tex}
+
+                        \input{evaluation.tex}
+                
+\end{document}
