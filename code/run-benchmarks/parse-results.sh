@@ -13,14 +13,21 @@ parsing_functions["build-linux-kernel"]="Build: defconfig:"
 parsing_functions["ffmpeg"]="Encoder: libx264 - Scenario: Live:"
 parsing_functions["stockfish"]="Chess Benchmark:"
 parsing_functions["compress-7zip"]=""
+
 parsing_functions["compress-7zip-compress"]="Test: Compression Rating:"
 parsing_functions["compress-7zip-decompress"]="Test: Decompression Rating:"
+
 parsing_functions["npb"]="Test / Class: BT.C:"
 parsing_functions["rbenchmark"]="Test Results:"
 parsing_functions["dav1d"]="Video Input: Summer Nature 4K:"
 parsing_functions["stress-ng"]="Test: Pthread:"
 parsing_functions["cloverleaf"]="Input: clover_bm:"
 parsing_functions["blender"]="Blend File: BMW27 - Compute: CPU-Only:"
+parsing_functions["cassandra"]="Test: Writes:"
+parsing_functions["clickhouse"]=""
+parsing_functions["clickhouse-firstrun"]="100M Rows Hits Dataset, First Run / Cold Cache:"
+parsing_functions["clickhouse-secondrun"]="100M Rows Hits Dataset, Second Run:"
+parsing_functions["clickhouse-thirdrun"]="100M Rows Hits Dataset, Third Run:"
 
 for benchmark_dir in $input_dir/*/; do
         benchmark_name=$(basename "$benchmark_dir")
@@ -45,7 +52,17 @@ for benchmark_dir in $input_dir/*/; do
                                 cmp_key="${benchmark_name}-decompress"
                                 key="${parsing_functions[$cmp_key]}"
                                 cat $current_wd/*.txt | grep "$key" -A 1 | tr -s ' ' | sed -E "s/ (.*)/\1/" | grep -E "^[0-9]" > "${outfile}-decompress.txt"
-                                
+                        elif test "$benchmark_name" = "clickhouse"; then
+
+                                for metric in "firstrun" "secondrun" "thirdrun"; do
+                                        cmp_key="${benchmark_name}-${metric}"
+                                        key="${parsing_functions[$cmp_key]}"
+                                        cat $current_wd/*.txt | grep "$key" -A 1 | tr -s ' ' | sed -E "s/ (.*)/\1/" | grep -E "^([0-9]+\.?[0-9]+)$" > "${outfile}-${metric}.txt"
+                                done
+                                # cmp_key="${benchmark_name}-firstrun"
+                                # key="${parsing_functions[$cmp_key]}"
+                                # cat $current_wd/*.txt | grep "$key" -A 1 | tr -s ' ' | sed -E "s/ (.*)/\1/" | grep -E "^[0-9]" > "${outfile}-compress.txt"
+
                         else
                                 key="${parsing_functions[$benchmark_name]}"
                                 cat $current_wd/*.txt | grep "$key" -A 1 | tr -s ' ' | sed -E "s/ (.*)/\1/" | grep -E "^[0-9]" > $outfile
