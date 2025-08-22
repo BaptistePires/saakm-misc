@@ -16,4 +16,4 @@ create_dirs:
 	cp biblio.bib $(OUT_DIR)
 
 clean: *.pdf
-	rm -rf $(PDF_NAME).pdf $(OUT_DIR)
+	rm *.aux *.bcf *.dvi *.fdb_latexmk *.fls *.glo *.idx *.ind *.ist *.out *.log *.xml *.acn *.bbl *.blg *.glsdefs *.ilg *.acr *.alg *.glg *.gls *.toc

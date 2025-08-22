@@ -23,20 +23,51 @@
 
 \subsection{Kernel schedulers}
 
-\paragraph{The \textit{sched\_class} API}
-
-\par Linux scheduler subsystem offers an API to write scheduler through its \textit{sched\_class} structure. It contains a set of function pointers that has to be implemented by the schedulers and we will be called in the right place by the scheduler core. You still need to modify some datastructures of the kernel like the \textit{task\_struct} (it represents a task) and the \textit{rq} (it represents a runqueue) to store data of your scheduler. This already represents a lot of work because you need to understand how the core of the scheduler (6000+ LoC) works, when and how to take locks and all of the other synchronization mecanisms used (RCU, memory syncrhonizations, ...). \\ Once you have implemented yout scheduler, you need to modify the linking file \textit{vmlinux.lds.h} to add your brand new scheduling class. This is what will allow the kernel to find it and register it with the others. The last step is to compile and boot your kernel, and only then, you will be able to test and debug it. \\ 
+\textbf{\textit{sched\_class} API} Linux scheduler subsystem offers an API to write scheduler through its \textit{sched\_class} structure. It contains a set of function pointers that has to be implemented by the schedulers and we will be called in the right place by the scheduler core. You still need to modify some datastructures of the kernel like the \textit{task\_struct} (it represents a task) and the \textit{rq} (it represents a runqueue) to store data of your scheduler. This already represents a lot of work because you need to understand how the core of the scheduler (6000+ LoC) works, when and how to take locks and all of the other synchronization mecanisms used (RCU, memory syncrhonizations, ...). \\ Once you have implemented your scheduler, you need to modify the linking file \textit{vmlinux.lds.h} to add your brand new scheduling class. This is what will allow the kernel to find it and register it with the others. The last step is to compile and boot your kernel, and only then, you will be able to test and debug it. Schedulers are sorted by priority order as seen in Figure \ref{fig:sched-classes}.\\ 
 In short, writing a scheduler using the \textit{sched\_class} API is a long and tedious process that requires a wide and deep knowledge of the Linux kernel. \note{réecrire + restructurer un peu cette partie avec schedma sched class + avantages et inconvénients}
 
-% \paragraph{ghOSt - Userspace scheduling}
+\begin{figure}[htbp]
+        \centering
+        \begin{tikzpicture}[
+        node distance=.4cm,
+        schedclass/.style={
+                rectangle,
+                draw,
+                minimum width=1cm,
+                minimum height=0.5cm,
+                align=center
+        },
+        font=\small
+        ]
 
+        % Nodes for scheduling classes
+        \node[schedclass] (stop) {STOP};
+        \node[schedclass, right=of stop] (dl) {DL};
+        \node[schedclass, right=of dl] (rt) {RT};
+        \node[schedclass, right=of rt] (fair) {FAIR};
+        \node[schedclass, right=of fair] (ext) {EXT};
+        \node[schedclass, right=of ext] (idle) {IDLE};
+
+        % Arrows to represent the linked list
+        \draw[->] (stop) -- (dl);
+        \draw[->] (dl) -- (rt);
+        \draw[->] (rt) -- (fair);
+        \draw[->] (fair) -- (ext);
+        \draw[->] (ext) -- (idle);
+
+        \end{tikzpicture}
+        \caption{Linux scheduling classes per priority order}
+        \label{fig:sched-classes}
+\end{figure}
 % \par In order to match the evolution of their needs, Google needed a way to write, test and deploy schedulers easily. That is the main motivation behind ghOSt\cite{ghost-paper}. It delegates scheduling decisions to userspace and allows to deploy new schedulers or features without having to recompile and deploy kernel images. ghOst architecture is devided into two parts. The first one lies in the kernel, using a \textit{sched\_class} to implement the core of ghOSt and to define a rich API exposed to the userspace. The second part is executed in userspace and is composed of \textit{agents} which are scheduling policies. The two parts communicate through \textit{message queues} that allows the kernel to notify the agents of a thread state change, a scheduling tick. The agents now have all the information needed to make scheduling decisions and can commit \textit{transactions} via shared memory. \todo{presentation resultats + limitations}
 
 \paragraph{plugsched - Live scheduler update}
-\par Plugsched takes another approach to give users a way to tweak and modify the scheduler. It leverage the modularization of the Linux kernel by isolating the scheduler code into a \textit{Linux kernel module} that users can then modify, recompile and insert it into a running kernel. To do so, they rewrite the code sections of threads to redirect modified functions. \note{on est forcés de de passer tous les threads dans la nouvelle politique}
+\par Plugsched takes another approach to give users a way to tweak and modify the scheduler. It leverage the modularization of the Linux kernel by isolating the scheduler code into a \textit{Linux kernel module} that users can then modify, recompile and insert it into a running kernel. To do so, they rewrite the code sections of threads to redirect modified functions. Once you have modified the extracted code, you can insert it. They do a data update during the insertion to migrate the data from previous scheduler version to the new one.\note{reformuler, on est forcés de de passer tous les threads dans la nouvelle politique}
+
 \paragraph{Enoki} Enoki exposes 
 
 \paragraph{sched\_ext}
 \par \textit{sched\_ext} is a proposition by Meta that has been merged into the Linux kernel mainline in v6.12. It offers a way to write schedulers as \textit{eBPF} programs. They rely on the \textit{eBPF} verifier to provide safety and security. The eBPF API allows to communicate with userspace program quite easily through \textit{maps}. In this case, it is used to delegate some scheduling work to the userspace, such as in the scheduler \textit{scx\_rusty} where they offload all of the load balancing logic to a userspace program written in Rust. This solution comes with limitations as you need to learn the eBPF API (which is still less time consuming than the core of the Linux scheduler) and you can be limited by the eBPF verifier.\newline
 
+\par There are others way to modify the scheduler in the kernel. kpatch\cite{} provide a way to live patch a running kernel but is restricted to function level. 
 \par As we have seen in this section, the need for a way to write, test and easily deploy new schedulers in the Linux kernel is a pressing issue. Each of the presented solutions have their own advantages and drawbacks summarized in Table ?.
