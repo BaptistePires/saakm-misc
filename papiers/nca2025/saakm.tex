@@ -3,28 +3,37 @@
 
 \par We present \textit{Scheduler as a Kernel Module} (SaaKM), a framework that allows kernel developers to write schedulers as Linux kernel modules. Our main goal is to provide a way to write, test and deploy schedulers easily. To do so, we hide the complexity of the core scheduler (synchronization mecanisms, complex API) behind a set of functions corresponding to scheduling events that each scheduling policy must implement. We are also capable to have multiple policies loaded at the same time, allowing each applications to chose the scheduler that best fits its needs.
 
-\paragraph{Design}
-\par We rely on the \textit{sched\_class} API presented above to implement a minimal core scheduler (less than 1500 LoC) that will only be used to register policies and call callbacks at the right places. To not interfer with the existing schedulers such as EEVDF or sched\_ext, we place our scheduling class right before the idle one.\\ Each policy must implement a set of functions that map to specific scheduling events (e.g wakeup, scheduling tick, ...) and then register itself to our scheduling class. To not interfer with the existing schedulers such as EEVDF or sched\_ext, we place our scheduling class right before the idle one.\\
-\par{} There are two types of events. The \textit{thread events} and \textit{core events}. Table \ref{tab:saakm-callbacks} shows some examples of these events and their descriptions. We devided the selection of a CPU and the actual enqueuing in the runqueue in two steps. This is needed when a task is newly created task is woken up for the first time. In a first time, it locks the task and calls \texttt{new\_prepare} which returns the CPU. At this point, our scheduler sees the task for the first time, it needs to initialize and allocated metadata for it. Only then, the runqueue of the CPU is locked and \texttt{new\_place} is called to actually enqueue the task. Thanks to this architecture, we are able to hide the complexity of the syncrhonization mechanisms to the user.
+\subsection{Design and Implementation}
 
+\par We implement a minimal (less than 1500 LoC) scheduling class that implements all of the scheduling functions requiered by the core scheduler. We place ourselves after the ext policy and before the idle one to not disturb higher priority scheduling classes (e.g RR, fair). We expose an API for the Linux kernel Modules (LKM) to enable them to register as scheduling policies. We store the policies in a linked list sorted by insertion date. Each policy is assigned a id that is unique and used by applications to select the policy they want to use. Figure ? shows the general architecture of SaaKM. \newline
+
+\par To register a policy, a module must implement a set of functions defined in the structure \texttt{saakm\_module\_routines}. It is composed of handlers that map to scheduling events. Table \ref{tab:saakm-callbacks} shows an excerpt of those events. Events are devided into two categories. Thread events consist of all events related to a thread (e.g thread is waking up, a new thread is created, ...) and core events that are related to core management (e.g core becoming idle, scheduling tick, ...). This distinction allow user to exactly know the path it is. For instance, take the \texttt{enqueue\_task} function from the \texttt{sched\_class} structure. X \todo{est-ce que c'est une bonne idée comme example ?} paths lead to its call. For instance, when a thread is waking up and need to be enqueued back on a runqueue or if a thread was just created. We hide this complexity behind the event and call the handlers at the right places. This way, the user does not need to differentiate paths, it just have to worry about the event currently happening.\newline
+\par In order to hide the complexity of the synchronization mechanisms, we split the selection of a CPU and the actual enqueuing in two steps. The first one (\texttt{new\_prepare} and \texttt{unblock\_prepare}) must returns the id of the CPU on which the thread should run. Then comes the second step (\textit{new\_place} and \texttt{unblock\_place}) where the actual enqueuing takes place. It frees the user from knowing which locks are currently held and which ones it is allowed to take. It is needed for instance when a thread is created. \note{completer et réécrire}
+
+\note{parler des etats des threads (et verifications via la machine à état), de comment on passe des données via les structures *\_event, peut etre un exemple du workflow (insertion usage etc), parler de la gestion des runqueues, la migration avec le flag OUSTED, gestion du load balancing,}
+\subsection{}
+% \par We rely on the \textit{sched\_class} API presented above to implement a minimal core scheduler (less than 1500 LOC) that will only be used to register policies and call callbacks at the right places. To not interfer with the existing schedulers such as EEVDF or sched\_ext, we place our scheduling class right before the idle one.\\ Each policy must implement a set of functions that map to specific scheduling events (e.g wakeup, scheduling tick, ...) and then register itself to our scheduling class. To not interfer with the existing schedulers such as EEVDF or sched\_ext, we place our scheduling class right before the idle one. Figure ? shows the general architecture of SaaKM\\
+% \par{} There are two types of events. The \textit{thread events} and \textit{core events}. Table \ref{tab:saakm-callbacks} shows some examples of these events and their descriptions. We devided the selection of a CPU and the actual enqueuing in the runqueue in two steps. This is needed when a task is newly created task is woken up for the first time. In a first time, it locks the task and calls \texttt{new\_prepare} which returns the CPU. At this point, our scheduler sees the task for the first time, it needs to initialize and allocated metadata for it. Only then, the runqueue of the CPU is locked and \texttt{new\_place} is called to actually enqueue the task. Thanks to this architecture, we are able to hide the complexity of the syncrhonization mechanisms to the user.
+
+% \begin{table}[htbp]
+% \caption{Table Type Styles}
+% \begin{center}
+% \begin{tabular}{|c|c|c|c|}
+% \hline
+% \textbf{Table}&\multicolumn{3}{|c|}{\textbf{Table Column Head}} \\
+% \cline{2-4} 
+% \textbf{Head} & \textbf{\textit{Table column subhead}}& \textbf{\textit{Subhead}}& \textbf{\textit{Subhead}} \\
+% \hline
+% copy& More table copy$^{\mathrm{a}}$& &  \\
+% \hline
+% \multicolumn{4}{l}{$^{\mathrm{a}}$Sample of a Table footnote.}
+% \end{tabular}
+% \label{tab1}
+% \end{center}
+% \end{table}
 \begin{table}[htbp]
-\caption{Table Type Styles}
-\begin{center}
-\begin{tabular}{|c|c|c|c|}
-\hline
-\textbf{Table}&\multicolumn{3}{|c|}{\textbf{Table Column Head}} \\
-\cline{2-4} 
-\textbf{Head} & \textbf{\textit{Table column subhead}}& \textbf{\textit{Subhead}}& \textbf{\textit{Subhead}} \\
-\hline
-copy& More table copy$^{\mathrm{a}}$& &  \\
-\hline
-\multicolumn{4}{l}{$^{\mathrm{a}}$Sample of a Table footnote.}
-\end{tabular}
-\label{tab1}
-\end{center}
-\end{table}
-\begin{table}[htbp]
-        \centering
+        % \centering
+        \caption{Extract of \texttt{saakm\_module\_routines} functions}
         \begin{tabular}{|c|c|}
         % \toprule
         \hline
@@ -46,7 +55,7 @@ copy& More table copy$^{\mathrm{a}}$& &  \\
         % \bottomrule
         \hline
         \end{tabular}
-        \caption{Some \texttt{saakm\_module\_routines} functions and their description.}
+        
 \label{tab:saakm-callbacks}
 \end{table}
 
