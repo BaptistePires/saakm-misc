@@ -1,10 +1,12 @@
 PDF_NAME=main
 OUT_DIR=./out
 
+LFLAGS=-file-line-error --shell-escape
+
 .PHONY: create_dirs
 
 all: create_dirs main.tex
-	pdflatex main
+	pdflatex $(LFLAGS) main
 	# biber main
 	# pdflatex main
 	# pdflatex main

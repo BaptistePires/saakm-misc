@@ -1,13 +1,8 @@
 \section{Motivation and Background}
 
 \par The scheduler is a critical part of an Operating System (OS) that manages processes execution. It has to take into account the hardware it runs on but also have to adapt to a lot of different workloads. Currently, the general purpose scheduler of Linux is Earliest Eligible Virtual Deadline First (EEVDF) that has been introduced in v6.6. Being the default scheduler, it has to support a wide variety of workloads (e.g video encoding, web services,  ...) but this genericity comes with a cost. Firstly, il is composed of 7000+ LOC and depends heavily on other kernel APIs like the memory management subsystem, the synchronization mechanisms (e.g locks, RCU, ...). This make the development and maintenance quite complex for the kernel developers as you need to put a lot of time and effort to be able to understand the code. Being a core part of the kernel, modifying it requires you to recompile and redeploy your kernel, making the developemnt and debuging a time consuming process. That's why there are been efforts to provide kernel developers ways to write, test, debug and deploy schedulers easily. \\ \newline
-\textbf{Ease of Use\note{renommer ?}} An ideal solution would not require kernel developers to master a new langage nor a new subsystem of the kernel as it would defeat one the purpose of the solution, that is the accessibility part. By the nature of kernel development, they must already be knowledgeable in C and some of the kernel APIs and subsystems. Linux kernel modules answer perfectly to this need.
 
-\textbf{Performance} The solution must incur the lowest overhead possible. As the scheduler is a critiacal part regarding performances, even a small overhead can cause significant performances degradation. We must keep our solution as ligthweiht as possible, giving the users the choice to add features that can cause this overhead if they want to.
-
-\textbf{Testing and Debugging}
-
-\note{ces trois points à bouger dans Saakm ?}
+% \note{ces trois points à bouger dans Saakm ?}
 
 \par There has been an effort in recent years to provide such a solution. We can devide those in two main categories, the schedulers executing in userspace and the ones executing in kernel space. \\
 
@@ -28,37 +23,45 @@ In short, writing a scheduler using the \textit{sched\_class} API is a long and 
 
 \begin{figure}[htbp]
         \centering
-        \begin{tikzpicture}[
-        node distance=.4cm,
-        schedclass/.style={
-                rectangle,
-                draw,
-                minimum width=1cm,
-                minimum height=0.5cm,
-                align=center
-        },
-        font=\small
-        ]
-
-        % Nodes for scheduling classes
-        \node[schedclass] (stop) {STOP};
-        \node[schedclass, right=of stop] (dl) {DL};
-        \node[schedclass, right=of dl] (rt) {RT};
-        \node[schedclass, right=of rt] (fair) {FAIR};
-        \node[schedclass, right=of fair] (ext) {EXT};
-        \node[schedclass, right=of ext] (idle) {IDLE};
-
-        % Arrows to represent the linked list
-        \draw[->] (stop) -- (dl);
-        \draw[->] (dl) -- (rt);
-        \draw[->] (rt) -- (fair);
-        \draw[->] (fair) -- (ext);
-        \draw[->] (ext) -- (idle);
-
-        \end{tikzpicture}
-        \caption{Linux scheduling classes per priority order}
-        \label{fig:sched-classes}
+        \includesvg[width=0.4\textwidth]{/home/baptiste/these/saakm-misc/papiers/nca2025/figures/linux-scheduling-class.svg}
+        \caption{Linux scheduling classes overview}
+        % \label{fig:linux-scheduling-class-svg}
 \end{figure}
+
+
+% \begin{figure}[htbp]
+%         \centering
+%         \begin{tikzpicture}[
+%         node distance=.4cm,
+%         schedclass/.style={
+%                 rectangle,
+%                 draw,
+%                 minimum width=1cm,
+%                 minimum height=0.5cm,
+%                 align=center
+%         },
+%         font=\small
+%         ]
+
+%         % Nodes for scheduling classes
+%         \node[schedclass] (stop) {STOP};
+%         \node[schedclass, right=of stop] (dl) {DL};
+%         \node[schedclass, right=of dl] (rt) {RT};
+%         \node[schedclass, right=of rt] (fair) {FAIR};
+%         \node[schedclass, right=of fair] (ext) {EXT};
+%         \node[schedclass, right=of ext] (idle) {IDLE};
+
+%         % Arrows to represent the linked list
+%         \draw[->] (stop) -- (dl);
+%         \draw[->] (dl) -- (rt);
+%         \draw[->] (rt) -- (fair);
+%         \draw[->] (fair) -- (ext);
+%         \draw[->] (ext) -- (idle);
+
+%         \end{tikzpicture}
+%         \caption{Linux scheduling classes per priority order}
+%         \label{fig:sched-classes}
+% \end{figure}
 % \par In order to match the evolution of their needs, Google needed a way to write, test and deploy schedulers easily. That is the main motivation behind ghOSt\cite{ghost-paper}. It delegates scheduling decisions to userspace and allows to deploy new schedulers or features without having to recompile and deploy kernel images. ghOst architecture is devided into two parts. The first one lies in the kernel, using a \textit{sched\_class} to implement the core of ghOSt and to define a rich API exposed to the userspace. The second part is executed in userspace and is composed of \textit{agents} which are scheduling policies. The two parts communicate through \textit{message queues} that allows the kernel to notify the agents of a thread state change, a scheduling tick. The agents now have all the information needed to make scheduling decisions and can commit \textit{transactions} via shared memory. \todo{presentation resultats + limitations}
 
 \paragraph{plugsched - Live scheduler update}
