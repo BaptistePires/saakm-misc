@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2026/dev/Arch Linux) (preloaded format=pdflatex 2025.4.15)  24 AUG 2025 03:26
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2026/dev/Arch Linux) (preloaded format=pdflatex 2025.4.15)  24 AUG 2025 21:48
 entering extended mode
  \write18 enabled.
  file:line:error style messages enabled.
@@ -667,11 +667,18 @@ Underfull \hbox (badness 10000) in paragraph at lines 10--11
 LaTeX Warning: Citation `ghost' on page 1 undefined on input line 12.
 
 
-LaTeX Warning: Reference `fig:sched-classes' on page 1 undefined on input line 
-22.
+Underfull \hbox (badness 3158) in paragraph at lines 12--13
+\OT1/ptm/m/n/10 is an in-fras-truc-ture that del-e-gates schedul-ing de-ci-sion
+s
+ []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 22--25
+Underfull \hbox (badness 2302) in paragraph at lines 12--13
+\OT1/ptm/m/n/10 in-for-ma-tion through mes-sages queues then they in-form
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 12--13
 
  []
 
@@ -682,9 +689,21 @@ ts/enc/dvips/base/8r.enc}
 
 
 ]
-Package svg Info: Last page of `./svg-inkscape/linux-scheduling-class_svg-tex.p
-df' is 1 on input line 28.
+Underfull \hbox (badness 10000) in paragraph at lines 28--29
 
+ []
+
+
+LaTeX Warning: Reference `fig:sched-classes' on page 2 undefined on input line 
+30.
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 30--33
+
+ []
+
+Package svg Info: Last page of `./svg-inkscape/linux-scheduling-class_svg-tex.p
+df' is 1 on input line 36.
 (./svg-inkscape/linux-scheduling-class_svg-tex.pdf_tex
 <./svg-inkscape/linux-scheduling-class_svg-tex.pdf, id=14, page=1, 564.60938pt 
 x 33.87656pt>
@@ -694,11 +713,9 @@ File: ./svg-inkscape/linux-scheduling-class_svg-tex.pdf Graphic file (type pdf)
 Package pdftex.def Info: ./svg-inkscape/linux-scheduling-class_svg-tex.pdf , pa
 ge1 used on input line 56.
 (pdftex.def)             Requested size: 206.39685pt x 12.3837pt.
-)) (./saakm.tex
-Underfull \vbox (badness 3646) has occurred while \output is active []
+)
 
-
-
+) (./saakm.tex
 
 LaTeX Warning: Reference `fig:sched-class-saakm' on page 2 undefined on input l
 ine 19.
@@ -709,6 +726,8 @@ Underfull \hbox (badness 10000) in paragraph at lines 19--20
  []
 
 
+
+[2 <./svg-inkscape/linux-scheduling-class_svg-tex.pdf>]
 Underfull \hbox (badness 10000) in paragraph at lines 21--22
 
  []
@@ -718,12 +737,8 @@ Underfull \hbox (badness 10000) in paragraph at lines 23--24
 
  []
 
-
-
-[2 <./svg-inkscape/linux-scheduling-class_svg-tex.pdf>]
 Package svg Info: Last page of `./svg-inkscape/linux-saakm-class_svg-tex.pdf' i
 s 1 on input line 29.
-
 (./svg-inkscape/linux-saakm-class_svg-tex.pdf_tex
 <./svg-inkscape/linux-saakm-class_svg-tex.pdf, id=45, page=1, 564.60938pt x 166
 .74797pt>
@@ -739,6 +754,8 @@ LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 3
 (/usr/share/texmf-dist/tex/latex/psnfss/ot1pcr.fd
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 )
+
+
 Underfull \hbox (badness 1803) in paragraph at lines 41--42
 \OT1/ptm/m/n/10 def-i-ni-tion that poli-cies uses and in-cludes in their own
  []
@@ -755,8 +772,6 @@ s to
  []
 
 
-
-
 Underfull \hbox (badness 5637) in paragraph at lines 50--52
 []\OT1/ptm/b/n/10 Hardware topol-ogy \OT1/ptm/m/n/10 To al-low poli-cies to pro
 p-erly
@@ -768,13 +783,13 @@ Underfull \hbox (badness 5954) in paragraph at lines 50--52
  []
 
 
+
+[3 <./svg-inkscape/linux-saakm-class_svg-tex.pdf>]
 Underfull \hbox (badness 10000) in paragraph at lines 86--87
 
  []
 
 
-
-[3 <./svg-inkscape/linux-saakm-class_svg-tex.pdf>]
 Underfull \hbox (badness 10000) in paragraph at lines 90--91
 []\OT1/ptm/b/n/10 Selecting a pol-icy \OT1/ptm/m/n/10 Se-lect-ing a pol-icy is 
 pretty
@@ -825,7 +840,7 @@ LaTeX Warning: There were undefined references.
 Here is how much of TeX's memory you used:
  15682 strings out of 475171
  314513 string characters out of 5767095
- 707433 words of memory out of 5000000
+ 706434 words of memory out of 5000000
  38333 multiletter control sequences out of 15000+600000
  605628 words of font info for 131 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
@@ -835,7 +850,7 @@ exmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/share/texmf-dist/fonts/type1
 /urw/times/utmb8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb>
 </usr/share/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texmf-dist/
 fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (4 pages, 142155 bytes).
+Output written on main.pdf (4 pages, 143330 bytes).
 PDF statistics:
  123 PDF objects out of 1000 (max. 8388607)
  68 compressed objects within 1 object stream
