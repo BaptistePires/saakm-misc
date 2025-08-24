@@ -18,7 +18,7 @@
 \subsection{Design overview}
 \par SaaKM is an API to write schedulers as Linux kernel modules. It exposes a minimal set of exported functions to the modules that can be used to allocate, manage and destroy scheduling policies and data. Figure \ref{fig:sched-class-saakm} shows how SaAKM integrates itself with the current scheduling classes. We position ourselves right before the idle class to not disrupt higher priority classes that other threads runs.\newline
 
-\par All of the SaaKM disgn relies on a structure composed of handlers that each policy must implement. Each handler maps to a scheduling event. Events are devided into two categories. Thread events correspond to all scheduling events related to a thread (e.g threak is created, waking up, ...). On the other hand, core events are related to the CPU cores (e.g scheduling tick, core becoming idle, ...). This distinction makes it clear for the user to know what it should do, hiding the complexity of the scheduling class API where a single function can be called from multiple paths (i.e enqueue\_task). Table \ref{tab:saakm-callbacks} shows an excerpt of those events.\newline
+\par All of the SaaKM design relies on a structure composed of handlers that each policy must implement. Each handler maps to a scheduling event. Events are devided into two categories. Thread events correspond to all scheduling events related to a thread (e.g threak is created, waking up, ...). On the other hand, core events are related to the CPU cores (e.g scheduling tick, core becoming idle, ...). This distinction makes it clear for the user to know what it should do, hiding the complexity of the scheduling class API where a single function can be called from multiple paths (i.e enqueue\_task). Table \ref{tab:saakm-callbacks} shows an excerpt of those events.\newline
 
 \par Furthermore, this division allows us to hide the complexity of the syucrhonization mecanisms of the core scheduler. As multicore and NUMA architectures are the quite common now, the scheduler must synchroniza data across cores quite often as two core may access the same data. It protects these data through the usage of locks, RCU and low level synchronization mecanisms like memory barriers. Thanks to our design, the user does not need to worry about these and assume that it has the right locks on the data whenever it is needed.\note{réecrire cette partie} \newline
 
@@ -26,7 +26,7 @@
 
 \begin{figure}[htbp]
         \centering
-        \includesvg[width=0.45\textwidth]{/home/baptiste/these/saakm-misc/papiers/nca2025/figures/linux-saakm-class.svg}
+        \includesvg[width=0.45\textwidth]{figures/linux-saakm-class.svg}
         \caption{SaaKM scheduling class with three policies loaded (refaire pour rendre plus visible)}
         \label{fig:linux-saakm-sched-class}
 \end{figure}
@@ -78,11 +78,22 @@ Policies should also be able to do load balacing when a CPU is becoming idle. Wh
         
 \label{tab:saakm-states}
 \end{table}
-\pagebreak
+
 % \par We implement a minimal (less than 1500 LoC) scheduling class that implements all of the scheduling functions requiered by the core scheduler. We place ourselves after the ext policy and before the idle one to not disturb higher priority scheduling classes (e.g RR, fair). We expose an API for the Linux kernel Modules (LKM) to enable them to register as scheduling policies. We store the policies in a linked list sorted by insertion date. Each policy is assigned a id that is unique and used by applications to select the policy they want to use. Figure ? shows the general architecture of SaaKM. \newline
 
 \subsection{SaaKM workflow}
-\par To register a policy, a module must implement a set of functions defined in the structure \texttt{saakm\_module\_routines}. It is composed of handlers that map to scheduling events. Table \ref{tab:saakm-callbacks} shows an excerpt of those events. Events are devided into two categories. Thread events consist of all events related to a thread (e.g thread is waking up, a new thread is created, ...) and core events that are related to core management (e.g core becoming idle, scheduling tick, ...). This distinction allow user to exactly know the path it is. For instance, take the \texttt{enqueue\_task} function from the \texttt{sched\_class} structure. X \todo{est-ce que c'est une bonne idée comme example ?} paths lead to its call. For instance, when a thread is waking up and need to be enqueued back on a runqueue or if a thread was just created. We hide this complexity behind the event and call the handlers at the right places. This way, the user does not need to differentiate paths, it just have to worry about the event currently happening. \note{ancienne version, bouger des phrases ailleurs}\newline
+
+\par In this section we will go through SaaKM workflow ....\newline
+
+\par \textbf{Registering a policy} To register a policy, during its initialization, a module must allocate and fill a \texttt{saakm\_policy} that contains all of the policy metadata (i.e. name, routines, id and metadata). It must also allocate then initialize its runqueues with the \texttt{saakm\_runqueue\_init} specifying the type of the runqueue (FIFO, LIST, RED-BLACK TREE) and an ordering function if needed. It can then register itself by calling the \texttt{saakm\_add\_policy}.
+
+\par \textbf{Selecting a policy} Selecting a policy is pretty straighforward. An application must define an \texttt{sched\_attr} structure and set the \texttt{sched\_policy} field to SCHED\_SAAKM and set the \texttt{sched\_saakm\_policy} with the value of the policy id it wants. From this point, the thread \texttt{task\_struct.sched\_class} field is set to our scheduling policy and will therefore be scheduled by SaaKM. \newline
+
+\par \textbf{Debugging and testing} Being a kernel module, policies can leverage the already existing kernel debugging tools such KGDB, ftrace, the debugfs interface and many others. On top of that, we provide a kernel configuration options to check the transitions of the thread states and trigger panic when it happens. We also exposes a procfs directory that list the current policies loaded with some metadata. Finally, we use the \texttt{sysfs} interface to turn on or off some debugging feature : thread transitions checks, print the wrongful transitions and print the scheduling classes calls.
+\newpage
+
+
+% \par To register a policy, a module must implement a set of functions defined in the structure \texttt{saakm\_module\_routines}. It is composed of handlers that map to scheduling events. Table \ref{tab:saakm-callbacks} shows an excerpt of those events. Events are devided into two categories. Thread events consist of all events related to a thread (e.g thread is waking up, a new thread is created, ...) and core events that are related to core management (e.g core becoming idle, scheduling tick, ...). This distinction allow user to exactly know the path it is. For instance, take the \texttt{enqueue\_task} function from the \texttt{sched\_class} structure. X \todo{est-ce que c'est une bonne idée comme example ?} paths lead to its call. For instance, when a thread is waking up and need to be enqueued back on a runqueue or if a thread was just created. We hide this complexity behind the event and call the handlers at the right places. This way, the user does not need to differentiate paths, it just have to worry about the event currently happening. \note{ancienne version, bouger des phrases ailleurs}\newline
 % \par \textit{Synchronizations} In order to hide the complexity of the synchronization mechanisms, we split the selection of a CPU and the actual enqueuing in two steps. The first one (\texttt{new\_prepare} and \texttt{unblock\_prepare}) must returns the id of the CPU on which the thread should run. Then comes the second step (\textit{new\_place} and \texttt{unblock\_place}) where the actual enqueuing takes place. It frees the user from knowing which locks are currently held and which ones it is allowed to take. It is needed for instance when a thread is created. \note{completer et réécrire} \newline
 % \par \textit{Thread states} We overload thread states with ours to make it easier for the user to manage\note{?}. As we have the full control over our states, this allows us to check for wrongful transitions and provide debug feedback to the users. This ease the process of development and debugging. \newline
 % \par \textit{Runqueues mamagement} Each policy must allocate its runqueues ...
