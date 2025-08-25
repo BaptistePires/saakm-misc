@@ -28,6 +28,10 @@ parsing_functions["clickhouse"]=""
 parsing_functions["clickhouse-firstrun"]="100M Rows Hits Dataset, First Run / Cold Cache:"
 parsing_functions["clickhouse-secondrun"]="100M Rows Hits Dataset, Second Run:"
 parsing_functions["clickhouse-thirdrun"]="100M Rows Hits Dataset, Third Run:"
+parsing_functions["byte"]="Computational Test: Dhrystone 2:"
+parsing_functions["svt-av1"]="Encoder Mode: Preset 13 - Input: Bosphorus 4K:"
+parsing_functions["namd"]="Input: ATPase with 327,506 Atoms:"
+parsing_functions["onednn"]="Harness: Convolution Batch Shapes Auto - Engine: CPU:"
 
 for benchmark_dir in $input_dir/*/; do
         benchmark_name=$(basename "$benchmark_dir")

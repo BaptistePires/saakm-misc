@@ -122,6 +122,46 @@ benchmarks_description = {
         }
                 ]
         },
+        "svt-av1" : {
+                "metrics" : [
+                        {
+                "metric" : "Frames per second (fps)",
+                "reading": "Higher is better",
+                "title": "Encoder preset 13 - Input: Bosphorus 4K",
+                "parsed_filename" : "parsed.txt"
+        }
+                ]
+        },
+        "namd" : {
+                "metrics" : [
+                        {
+                "metric" : "ns/day",
+                "reading": "Higher is better",
+                "title": "ATParse with 327,506 Atoms",
+                "parsed_filename" : "parsed.txt"
+        }
+                ]
+        },
+        "byte" : {
+                "metrics" : [
+                        {
+                "metric" : "LPS",
+                "reading": "Higher is better",
+                "title": "Dhrystone 2",
+                "parsed_filename" : "parsed.txt"
+        }
+                ]
+        },
+        "onednn" : {
+                "metrics" : [
+                        {
+                "metric" : "Time (ms)",
+                "reading": "Lower is better",
+                "title": "Convolution Batch Shapes Auto - CPU",
+                "parsed_filename" : "parsed.txt"
+        }
+                ]
+        },
         "compress-7zip" :  {
                 "multiple": True,
                 "metrics" : [
