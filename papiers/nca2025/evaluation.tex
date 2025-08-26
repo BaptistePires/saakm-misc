@@ -1,5 +1,15 @@
 \section{Evaluation}
 
+\par In this section we present our experimental setup
+
+\subsection{Experimental Setup}
+\par We run our benchmarks on a server running Debien 12 bookworm with a our patched Linux kernel v6.12. The server is equiped with 10 core and 20 SMT threads (Intel(R) Core(TM) i9-10900K CPU @ 3.70GHz), 20MB of L3 cache and 64GO of RAM. We run each benchmark at least 50 times and present the mean and standard deviation. \\
+We compare ourselves to the ext scheduler. We implement a minimal FIFO scheduler for comparaison. Functions to select CPUs are based on threads PIDs as e want to mesaure the overhead of SaaKM and not the efficiency of a scheduling algorithm. \\
+We ran a total of X applications, using the phoronix test suite and builtin benchmarks from applications. \newpage
+
+\subsection{Evaluation goal}
+\par The goal of our experimentation is to evaluate if SaaKM is a viable solution for writing schedulers and how it performs compared to existing solution. We are motivated by the
+
 \begin{itemize}
         \item Definir les métriques
         \item Definir ce à quoi on se compare
