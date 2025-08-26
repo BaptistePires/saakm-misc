@@ -7,9 +7,9 @@ LFLAGS=-file-line-error --shell-escape
 
 all: create_dirs main.tex
 	pdflatex $(LFLAGS) main
-	# biber main
-	# pdflatex main
-	# pdflatex main
+	bibtex main
+	pdflatex main
+	pdflatex main
 	# cp $(OUT_DIR)/$(PDF_NAME).pdf $(PDF_NAME).pdf
 	# rm -r $(OUT_DIR)
 
