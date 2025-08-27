@@ -1,2 +1,4 @@
 \section{Conclusion}
-\par Through this work we show that
+\par Through this work we presented SaaKM, a kernel framework to write schedulers as Linux kernel Modules. Its goal is to provide an easier way than the scheduling class without the need to learn a new language or total subsystem. We show that SaaKM is capable of similar performances than the ext scheduling class with a minimal per-cpu FIFO scheduler. \newline
+
+\note{idees que je ne sais pas trop où mettre pour le moment : utiliser les modules en C c'est bien car ça forcer les dev à apprendre une nouvelle API ou un langage ça peut être une barrière et les rebuter. \newline la perte de sécurité comparé au Enoki/ext n'est pas si grave car si dev expérimenté, il a quand même les outils pour savoir ce qu'il fait et tester son code avec les outils existants. \newline chaine de compilaton beaucoup plus simple qu'Enoki(besoin de compiler du rust (j'ai pas regardé encore comment compiler leurs sched) et que sched ext)}

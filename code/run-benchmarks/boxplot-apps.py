@@ -267,8 +267,8 @@ for benchmark_name, results in benchmarks_results.items():
         percent_diffs = []
         benchmarks = []
 
-for benchmark_name, results in benchmarks_results.items():
-        
+for benchmark_name in sorted(benchmarks_results.keys()):
+        results = benchmarks_results[benchmark_name]
         ext_mean = np.mean(results["ext"])
         ipanema_mean = np.mean(results["ipanema"])
         if ext_mean != 0:
@@ -277,10 +277,11 @@ for benchmark_name, results in benchmarks_results.items():
                 if results["reading"] == LSB:
                         percent_diff = -percent_diff
                         
-                print(benchmark_name, percent_diff)
+                print(f'{benchmark_name.replace("_", "\\_")} & {round(np.mean(results["ext"]), 2)} & {round(np.mean(results["ipanema"]), 2)} & {round(percent_diff, 2)}\\% \\\\')
                 percent_diffs.append(percent_diff)
                 benchmarks.append(benchmark_name)
 
+print(np.mean(percent_diffs), stats.tstd(percent_diffs))
 plt.figure(figsize=(10, 6))
 bars = plt.bar(benchmarks, percent_diffs, color='skyblue')
 plt.axhline(0, color='gray', linewidth=0.8, linestyle='--')
@@ -292,3 +293,19 @@ plt.ylim(-5,5)
 plt.tight_layout()
 plt.savefig('percentage_difference_barplot.png')
 plt.close()
+
+
+# for benchmark_name, results in benchmarks_results.items():
+        
+#         ext_mean = np.mean(results["ext"])
+#         ipanema_mean = np.mean(results["ipanema"])
+#         if ext_mean != 0:
+#                 percent_diff = ((ipanema_mean - ext_mean) / ((ext_mean + ipanema_mean) / 2)) * 100
+
+#                 if results["reading"] == LSB:
+#                         percent_diff = -percent_diff
+                        
+#                 print(benchmark_name, percent_diff)
+#                 percent_diffs.append(percent_diff)
+#                 benchmarks.append(benchmark_name)
+

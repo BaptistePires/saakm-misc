@@ -1,4 +1,16 @@
 svt-av1;phoronix-test-suite run svt-av1 FORCE_TIMES_TO_RUN=1 NO_COLOR=TRUE;inputs/input_svt-av1.txt
 namd;phoronix-test-suite run namd FORCE_TIMES_TO_RUN=1 NO_COLOR=TRUE;inputs/input_namd.txt
-byte;phoronix-test-suite run byte FORCE_TIMES_TO_RUN=1 NO_COLOR=TRUE;inputs/input_byte.txt
 onednn;phoronix-test-suite run onednn FORCE_TIMES_TO_RUN=1 NO_COLOR=TRUE;inputs/input_onednn.txt
+blender;phoronix-test-suite run blender FORCE_TIMES_TO_RUN=1 NO_COLOR=TRUE;inputs/input_blender.txt
+cloverleaf;phoronix-test-suite run cloverleaf FORCE_TIMES_TO_RUN=1 NO_COLOR=TRUE;inputs/input_cloverleaf.txt
+stress-ng;phoronix-test-suite run stress-ng FORCE_TIMES_TO_RUN=1 NO_COLOR=TRUE;inputs/input_stress-ng.txt
+cassandra;phoronix-test-suite run cassandra FORCE_TIMES_TO_RUN=1 NO_COLOR=TRUE;inputs/input_cassandra.txt
+clickhouse;phoronix-test-suite run clickhouse FORCE_TIMES_TO_RUN=1 NO_COLOR=TRUE;inputs/input_clickhouse.txt
+npb;phoronix-test-suite run npb FORCE_TIMES_TO_RUN=1 NO_COLOR=TRUE;inputs/input_npb.txt
+hackbench;hackbench -l 7000 -g 100;/dev/null
+compress-7zip;phoronix-test-suite run compress-7zip FORCE_TIMES_TO_RUN=1 NO_COLOR=TRUE;inputs/input_compress-7zip.txt
+dav1d;phoronix-test-suite run dav1d FORCE_TIMES_TO_RUN=1 NO_COLOR=TRUE;inputs/input_dav1d.txt
+stockfish;phoronix-test-suite run stockfish FORCE_TIMES_TO_RUN=1 NO_COLOR=TRUE;inputs/input_stockfish.txt
+build-linux-kernel;phoronix-test-suite run build-linux-kernel FORCE_TIMES_TO_RUN=1 NO_COLOR=TRUE;inputs/input_build-linux-kernel.txt
+x265;phoronix-test-suite run x265 FORCE_TIMES_TO_RUN=1 NO_COLOR=TRUE;inputs/input_x265.txt
+ffmpeg;phoronix-test-suite run ffmpeg FORCE_TIMES_TO_RUN=1 NO_COLOR=TRUE;inputs/input_ffmpeg.txt

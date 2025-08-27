@@ -9,7 +9,10 @@
 \usepackage{textcomp}
 \usepackage{xcolor}
 \usepackage{tikz}
+\usepackage{lipsum}
 \usepackage{svg}
+
+\usetikzlibrary{automata, positioning, shapes}
 
 
 \bibliographystyle{biblio/IEEEtran.bst}
@@ -58,6 +61,9 @@ email address}
 }
 
 \maketitle
+
+% \NewCommandCopy{\oldcite}{\cite}
+% \renewcommand{\cite}[1]{~\cite[#1]}
 
 \begin{abstract}
 \todo{abstract}

@@ -18,11 +18,11 @@
 \subsection{Design overview}
 \par SaaKM is an API to write schedulers as Linux kernel modules. It exposes a minimal set of exported functions to the modules that can be used to allocate, manage and destroy scheduling policies and data. Figure \ref{fig:sched-class-saakm} shows how SaAKM integrates itself with the current scheduling classes. We position ourselves right before the idle class to not disrupt higher priority classes that other threads runs.\newline
 
-\par All of the SaaKM design relies on a structure composed of handlers that each policy must implement. Each handler maps to a scheduling event. Events are devided into two categories. Thread events correspond to all scheduling events related to a thread (e.g threak is created, waking up, ...). On the other hand, core events are related to the CPU cores (e.g scheduling tick, core becoming idle, ...). This distinction makes it clear for the user to know what it should do, hiding the complexity of the scheduling class API where a single function can be called from multiple paths (i.e enqueue\_task). Table \ref{tab:saakm-callbacks} shows an excerpt of those events.\newline
+\par All of the SaaKM design relies on a structure composed of handlers that each policy must implement. Each handler maps to a scheduling event. Events are devided into two categories. Thread events correspond to all scheduling events related to a thread (e.g threak is created, waking up, ...). On the other hand, core events are related to the CPU cores (e.g scheduling tick, core becoming idle, ...). This distinction makes it clear for the user to know what it should do, hiding the complexity of the scheduling class API where a single function can be called from multiple paths. For instance, the enqueue\_task function of the scheduling class can be called from numerous places and for different reasons. It can be for a newly forked task, a migrating task, a waking up task. Our goal is to isolated those cases to let the user know what is actually happening without having to how it got called. Table \ref{tab:saakm-callbacks} shows an excerpt of those events.\newline
 
 \par Furthermore, this division allows us to hide the complexity of the syucrhonization mecanisms of the core scheduler. As multicore and NUMA architectures are the quite common now, the scheduler must synchroniza data across cores quite often as two core may access the same data. It protects these data through the usage of locks, RCU and low level synchronization mecanisms like memory barriers. Thanks to our design, the user does not need to worry about these and assume that it has the right locks on the data whenever it is needed.\note{réecrire cette partie} \newline
 
-\par To increase the flexibility of our solution, we support to have multiple policies loaded at the same time. This allows users to select the scheduling policy that is tailored for their workload.\note{completer}
+\par To increase the flexibility of our solution, we support to have multiple policies loaded at the same time. This allows applications to have the right scheduler tailored for their needs.\note{completer}
 
 \begin{figure}[htbp]
         \centering
@@ -40,7 +40,8 @@
 
 \par \textbf{Runqueues management} We provide a minimal runqueue definition that policies uses and includes in their own runqueues as a structure field. This allows to delegate the insertion/deletion and mandatory runqueue metadata fields to be handled by SaaKM. We provide three runqueue types. A FIFO, LIST and RED-BLACK tree. You must provide an ordering function for each type of runqueue, except for the FIFO that will always insert the task at the end of the queue. We provide these three types as they are the most common ones but thanks to its design it can be extended. Policies are required to initialize their runqueues before registering themselves.\newline 
 
-\par \textbf{Thread states} We define our own thread states to make to not interfer with the core scheduler. We define 7 states summurized in Figure \ref{tab:saakm-states}. We have one special state, SAAKM\_READY\_TICK that allows policy to notify SaaKM that it needs to trigger a reschedule. With this states, we are able to check for wrongful transitions and provide debug feedback to the user at runtime. This ease the debugging and testing process. \note{peut etre faire un diagramme d'etat qui montre la machine à etat et que c'est ça qui nous permet de detecter les erreurs ? mieux que tableau ?}\newline
+\par \textbf{Thread states} We define our own thread states to make to not interfer with the core scheduler. We define 7 states represented in Figure \ref{fig:saakm-states}. We have one special state, SAAKM\_READY\_TICK that allows policy to notify SaaKM that it needs to trigger a reschedule. With this states, we are able to check for wrongful transitions and provide debug feedback to the user at runtime. This ease the debugging and testing process. We provide a function \texttt{change\_state(task, next\_state, next\_cpu, next\_rq)} that is the core of SaaKM threads states managmenent Policies must call it anytime they want to alter the state of a thread giving it the right arguments. It is responsible of threads states management. It calls the core schedulers functions to keep the kernel related data correct. It also add and remove threads from the runqueues and check that the operation is valid (i.e. the correct locks are held). Threads states transitions checks is done in this function.
+\note{peut etre faire un diagramme d'etat qui montre la machine à etat et que c'est ça qui nous permet de detecter les erreurs ? mieux que tableau ?}\newline
 
 \par \textbf{Thread Migration} To handle thread migration that occurs because of affinity change or a \texttt{exec} rebalance (a newly created thread is being run on a diffrent CPU than its parent), we introduce a new flag, OUSTED. This flags allows us to know that we are being dequeued becuase of those reason so we can simulate a fast block/unblock sequence to remove the thread from its current runqueue and insert it into the new one. \newline
 
@@ -51,33 +52,41 @@ Policies should also be able to do load balacing when a CPU is becoming idle. Wh
 % \par Futhermore, this division allows us to hide the complex synchronization mecanisms of the core scheduler. For instance, there is a rule that if you need to lock multiple runqueue, on top of the overhead it might causes, you must always lock them in the correct order (i.e. the runqueue whose CPU id is the lowest must always be locked first
 
 \par \textbf{Multi-policy support} SaaKM supports to have multiple policies loaded at the same time. When it registers, it is given an unique incremental id that is used by application to select their policy. We then maintain them in a linked list ordered by insertion order. When a new thread must be elected, we go through the list of policies starting from the head of the list. The first policy to return a non NULL thread stops the search and the thread is elected. For load balancing, we also go through the full list to make sure that all policies can perform their load balance.
-\begin{table}[htbp]
-        % \centering
-        \caption{SaaKM thread states}
-        \begin{tabular}{|l|l|}
-        % \toprule
-        \hline
-        \textbf{State} & \textbf{Meaning} \\
-        % \midrule
-                \hline
-                \texttt{SAAKM\_NOT\_QUEUED} & Not in a runqueue \\
-                \hline
-                \texttt{SAAKM\_MIGRATING} & Being migrated \\
-                \hline
-                \texttt{SAAKM\_RUNNING} & Running on a CPU \\
-                \hline
-                \texttt{SAAKM\_READY} & Ready to run and in a runqueue \\
-                \hline
-                \texttt{SAAKM\_READY\_TICK} & Became ready from a \textit{tick} event \\
-                \hline
-                \texttt{SAAKM\_BLOCKED} & Blocked and cannot run \\
-                \hline
-                \texttt{SAAKM\_TERMINATED} & Dead \\
-                \hline
-        \end{tabular}
+% \begin{table}[htbp]
+%         % \centering
+%         \caption{SaaKM thread states}
+%         \begin{tabular}{|l|l|}
+%         % \toprule
+%         \hline
+%         \textbf{State} & \textbf{Meaning} \\
+%         % \midrule
+%                 \hline
+%                 \texttt{SAAKM\_NOT\_QUEUED} & Not in a runqueue \\
+%                 \hline
+%                 \texttt{SAAKM\_MIGRATING} & Being migrated \\
+%                 \hline
+%                 \texttt{SAAKM\_RUNNING} & Running on a CPU \\
+%                 \hline
+%                 \texttt{SAAKM\_READY} & Ready to run and in a runqueue \\
+%                 \hline
+%                 \texttt{SAAKM\_READY\_TICK} & Became ready from a \textit{tick} event \\
+%                 \hline
+%                 \texttt{SAAKM\_BLOCKED} & Blocked and cannot run \\
+%                 \hline
+%                 \texttt{SAAKM\_TERMINATED} & Dead \\
+%                 \hline
+%         \end{tabular}
         
-\label{tab:saakm-states}
-\end{table}
+% \label{tab:saakm-states}
+% \end{table}
+\begin{figure}[htbp]
+        \centering
+        \includesvg[width=0.5\textwidth]{figures/saakm-states.svg}
+        \caption{SaaKM states finite state machine}
+        \label{fig:saakm-states}
+\end{figure}
+
+
 
 % \par We implement a minimal (less than 1500 LoC) scheduling class that implements all of the scheduling functions requiered by the core scheduler. We place ourselves after the ext policy and before the idle one to not disturb higher priority scheduling classes (e.g RR, fair). We expose an API for the Linux kernel Modules (LKM) to enable them to register as scheduling policies. We store the policies in a linked list sorted by insertion date. Each policy is assigned a id that is unique and used by applications to select the policy they want to use. Figure ? shows the general architecture of SaaKM. \newline
 
@@ -89,7 +98,8 @@ Policies should also be able to do load balacing when a CPU is becoming idle. Wh
 
 \par \textbf{Selecting a policy} Selecting a policy is pretty straighforward. An application must define an \texttt{sched\_attr} structure and set the \texttt{sched\_policy} field to SCHED\_SAAKM and set the \texttt{sched\_saakm\_policy} with the value of the policy id it wants. From this point, the thread \texttt{task\_struct.sched\_class} field is set to our scheduling policy and will therefore be scheduled by SaaKM. \newline
 
-\par \textbf{Debugging and testing} Being a kernel module, policies can leverage the already existing kernel debugging tools such KGDB, ftrace, the debugfs interface and many others. On top of that, we provide a kernel configuration options to check the transitions of the thread states and trigger panic when it happens. We also exposes a procfs directory that list the current policies loaded with some metadata. Finally, we use the \texttt{sysfs} interface to turn on or off some debugging feature : thread transitions checks, print the wrongful transitions and print the scheduling classes calls. \newline
+\par \textbf{Debugging and testing} Being a kernel module, policies can leverage the already existing kernel debugging tools such KGDB\cite{kgdb}, ftrace, the debugfs interface and many others. On top of that, we provide a kernel configuration options to check the transitions of the thread states and trigger panic when it happens to give user control and a way to inspect the kernel. We also exposes a procfs directory that list the current policies loaded with some metadata. Finally, we use the \texttt{sysfs} interface to turn on or off some debugging features : thread transitions checks, print in dmesg the wrongful transitions and print the poilcy
+thread transitions checks, print the wrongful transitions and print the scheduling classes calls. \newline
 
 
 
@@ -124,28 +134,44 @@ Policies should also be able to do load balacing when a CPU is becoming idle. Wh
 \begin{table}[htbp]
         % \centering
         \caption{Extract of \texttt{saakm\_module\_routines} functions}
-        \begin{tabular}{|c|c|}
+        \begin{tabular}{|l|l|}
         % \toprule
         \hline
         \textbf{Function} & \textbf{Description} \\
         % \midrule
         \hline
-                \textbf{Thread events} & \\
-                \hline
-                \texttt{new\_prepare(p)} & Return CPU id where \texttt{p} should run\\
-                \texttt{new\_place(task, core)} & Insert \texttt{p} into \texttt{core} runqueue\\
-                % \texttt{unblock\_place(task)} & Retourne l'identifiant du CPU où doit être insérée \texttt{task}\\
-                % \texttt{unblock\_prepare(task)} & Insère \texttt{task} dans la runqueue de \texttt{core}\\
-        
+                \textbf{Thread events} &\\
+                % \hline
+                new\_prepare(p) & Return CPU id where \texttt{p} should run\\
+                new\_place(task, core) & Insert \texttt{p} into \texttt{core} runqueue\\
+                new\_end(task, core) & Insert \texttt{p} into \texttt{core} runqueue\\
+                unblock\_place(task) & Return CPU id where \texttt{p} should run\\
+                unblock\_prepare(task) & Insert \texttt{p} into \texttt{core} runqueue\\
+                block(task) & \texttt{p} is blocking\\
+                yield(task) & \texttt{p} is yielding the CPU\\
+                tick(task) & Called at each scheduler tick \\
+                terminate(task) & \texttt{task} dies \\
                 \hline
                 \textbf{Core events} & \\
-                \hline
-                \texttt{schedule(core)} & Called when a task must be elected\\
-                \texttt{newly\_idle(core)} & Called right after \texttt{schedule}\\
+                % \hline
+                schedule(core) & Called when a task must be elected\\
+                newly\_idle(core) & Called right after \texttt{schedule}\\& if no READY found\\
+                enter\_idle(core) & No task to run\\
+                exit\_idle(core) & A task is runnable\\
+                balancing\_select(core) & Called to do load balancing\\
+                core\_entry(core) & \texttt{core} is becoming online\\
+                core\_exit(core) & \texttt{core} is going offline\\
+                % \midrule
         % \bottomrule
-                \hline
-                \textbf{Policy management events} & \\
-                \texttt{init()} & Called to initialize policy\\
+                \hline 
+
+                \textbf{Policy management} & \\
+                % \hline
+                init() & Called to initialize policy\\
+                free\_metadata() & Free policy metadata\\
+                checkparam\_attr(sched\_attr) & Check validity of sched\_attr\\
+                setparam\_attr(sched\_attr) & Use sched\_attr to set values\\
+                setparam\_attr(sched\_attr) & Use sched\_attr to set values\\
                 \hline
         \end{tabular}
         

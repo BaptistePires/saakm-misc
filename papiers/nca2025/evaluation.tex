@@ -1,18 +1,66 @@
 \section{Evaluation}
 
-\par In this section we present our experimental setup
+\par In this section we evaluate SaaKM ease of use and performance. We presesnt a minimal FIFO scheduler implemented in SaaKM and with the the ext scheduler\cite{schedext} that has been merged in the linux kernel v6.12. Then we compare how both implementations perform on a set of benchmarks. \note{Dans quelle partie mettre ce paragraphe et faut-il le mettre ou l'amener autrement ? -- We chose to compare oursevles to the ext scheduler because it recently has been merged and the others solutions did not fit our needs. Enoki\cite{enoki} works on Linux v5.11, which is 21 release old and 1224 commits behind (for the directory kernel/shed/) the v6.12. Breaking changes also happened to the scheduler, notably the EEVDF merge and ... We want to compare ourselves to kernel scheduler framework and not userspace because it answer different needs, that is why we do not compare SaaKM to ghOSt (which works on a kernel v5.11).}\newline
 
 \subsection{Experimental Setup}
-\par We run our benchmarks on a server running Debien 12 bookworm with a our patched Linux kernel v6.12. The server is equiped with 10 core and 20 SMT threads (Intel(R) Core(TM) i9-10900K CPU @ 3.70GHz), 20MB of L3 cache and 64GO of RAM. We run each benchmark at least 50 times and present the mean and standard deviation. \\
-We compare ourselves to the ext scheduler. We implement a minimal FIFO scheduler for comparaison. Functions to select CPUs are based on threads PIDs as e want to mesaure the overhead of SaaKM and not the efficiency of a scheduling algorithm. \\
-We ran a total of X applications, using the phoronix test suite and builtin benchmarks from applications. \newpage
+\par \textbf{Benchmark platform} We run our benchmarks on a server running Debien 12 bookworm with a our patched Linux kernel v6.12. The server is equiped with 10 core and 20 SMT threads (Intel(R) Core(TM) i9-10900K CPU @ 3.70GHz), 20MB of L3 cache and 64GO of RAM. \newline
 
-\subsection{Evaluation goal}
-\par The goal of our experimentation is to evaluate if SaaKM is a viable solution for writing schedulers and how it performs compared to existing solution. We are motivated by the
+\par \textbf{Benchmarks} We used the Phoronix test suite\cite{phoronix} software to run our benchmarks and the hackbench\cite{hackbench} scheduler benchmark. We run each applications 50 times and clean the kernel caches between each run. We present the mean and the standard deviation of our results. \newline
 
+\par \textbf{Evaluated schedulers} In order to compare ourselves to existing solutions, we implement a FIFO scheduler using SaaKM and sched\_ext. The goal is to have both take the same scheduling decisions to see if our solution add or remove overhead. Each policy has a per-cpu local FIFO runqueue. Threads are always enqueued on the same CPU based on their PID. We do not perform any load balancing to simplify the design and to have more consistent results.\note{pas sûr de ça}\newline
+
+
+% We compare ourselves to the ext scheduler. We implement a minimal FIFO scheduler for comparaison. Functions to select CPUs are based on threads PIDs as e want to mesaure the overhead of SaaKM and not the efficiency of a scheduling algorithm. \\
+% We ran a total of X applications, using the phoronix test suite and builtin benchmarks from applications. \newpage
+
+\subsection{Results evaluation}
+% \par The goal of our experimenta/tion is to evaluate if SaaKM is a viable solution for writing schedulers and how it performs compared to existing solution. We are motivated by the
+\par On average, we see 0.33\% (+/- 1.04\%) of gain with the SaaKM implementation. Table~\ref{tab:bench-res} sums up the results per benchmark. We have a maximum loss with clickhouse for which we avec a decrease of 1.23\% of Queries Per Minute (QPM). The application showing the best results is x265 with a gain of 2.48\% of Frames Per Second (FPS). Out of the 16 benchmarked applications, 10 have a gain or loss between $-0.5\%$ and $0.5\%$. \newline
+
+\par Only two applictions showed more than 1\% loss, the 7zip compression and clickhouse, with respectively -1.2\% and -1.23\%. \note{j'ai des résultats clickhouse avec +0.57\% quand le cache est froid et -0.57\% au second run, là les résultats c'est le 3ème run, je trouve ça plus pertinent de montrer les résultats avec le cache chaud. Mais on peut peut être se servir des deux autres pour montrer que c'est peut être un problème de latence dans saaKM ?}\newline
+
+\subsection{Limitations}
+\par Our evaluation shows that SaaKM is a viable solution to write schedulers but it needs deeper tests. In this work we only test a simple per-cpu FIFO scheduler, we need to implement more schedulers such as Shinjuku~\cite{shinjuku}, EEVDF~\cite{eevdf} to see how we perform against them. \newline
+
+\par We did not leverage the multi-policy support of SaaKM, it would be interresting to see how it impacts multiple applications workloads and if the architecture adds overhead due to the policies iteration. \newline
+
+\par x265, Cassandra and npb shows the best improvements, all three gaining more than 1.99\%. 
 \begin{itemize}
         \item Definir les métriques
         \item Definir ce à quoi on se compare
         \item Présenter l'env et les benchmarks et les motiver
         \item Présentation et analyse des résultats
-\end{itemize}
+\end{itemize} 
+
+\note{pour le tableau, est-ce que je laisse comme ça ou je remets les pourcentage sans prendre en compte lower/higher is better et je rajoute une petite colonne pour indiquer la lecture de la ligne ? (lower/higher)}
+
+\begin{table}[htbp]
+        \centering
+        \caption{Benchmarks results. The Gain/Loss column represents the difference between ext and SaaKM in percentage.}\label{tab:bench-res}
+        \begin{tabular}{|l|l|l|l|}
+        % \toprule
+        \hline
+                Application (metric) & ext & SaaKM & Gain/Loss \\
+                \hline
+                        blender (s)& 141.96 & 141.83 & 0.09\% \\
+                        build-linux-kernel (s) & 214.66 & 215.31 & -0.3\% \\
+                        cassandra (Ops/s) & 102458 .62 & 104679.08 & 2.14\% \\
+                        clickhouse (Query/minuute)  & 125.63 & 124.09 & \textbf{-1.23}\% \\
+                        cloverleaf (s) & 152.81 & 153.09 & -0.18\% \\
+                        7zip - Compression (MIPS) & 58119.4 & 57426.78 & -1.2\% \\
+                        7zip - Decompress (MIPS) & 70908.98 & 71126.26 & 0.31\% \\
+                        dav1d (fps) & 188.02 & 188.64 & 0.33\% \\
+                        ffmpeg (fps) & 211.36 & 211.49 & 0.06\% \\
+                        hackbench (s) & 33.03 & 32.61 & 1.27\% \\
+                        namd (ns/day) & 0.64 & 0.64 & 0.13\% \\
+                        npb (Mop/s)& 21716.49 & 22151.99 & 1.99\% \\
+                        rbenchmark (s) & 0.57 & 0.57 & -0.22\% \\
+                        stockfish (nps) & 8392488.3 & 8427082.62 & 0.41\% \\
+                        svt-av1 (fps) & 95.09 & 95.13 & 0.04\% \\
+                        x265 (fps) & 57.5 & 58.94 & \textbf{2.48}\% \\
+                \hline
+        
+\end{tabular}
+        
+
+\end{table}

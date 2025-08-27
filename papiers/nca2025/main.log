@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2026/dev/Arch Linux) (preloaded format=pdflatex 2025.4.18)  26 AUG 2025 22:33
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2026/dev/Arch Linux) (preloaded format=pdflatex 2025.4.18)  27 AUG 2025 23:49
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -493,7 +493,25 @@ File: pgfmodulematrix.code.tex 2023-01-15 v3.1.10 (3.1.10)
 (/usr/share/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrary
 topaths.code.tex
 File: tikzlibrarytopaths.code.tex 2023-01-15 v3.1.10 (3.1.10)
-))) (/usr/share/texmf-dist/tex/latex/svg/svg.sty
+))) (/usr/share/texmf-dist/tex/latex/lipsum/lipsum.sty
+(/usr/share/texmf-dist/tex/latex/l3packages/l3keys2e/l3keys2e.sty
+(/usr/share/texmf-dist/tex/latex/l3kernel/expl3.sty
+Package: expl3 2025-01-18 L3 programming layer (loader) 
+
+(/usr/share/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
+File: l3backend-pdftex.def 2024-05-08 L3 backend support: PDF output (pdfTeX)
+\l__color_backend_stack_int=\count314
+\l__pdf_internal_box=\box67
+))
+Package: l3keys2e 2024-08-16 LaTeX2e option processing using LaTeX3 keys
+)
+Package: lipsum 2021-09-20 v2.7 150 paragraphs of Lorem Ipsum dummy text
+\g__lipsum_par_int=\count315
+\l__lipsum_a_int=\count316
+\l__lipsum_b_int=\count317
+
+(/usr/share/texmf-dist/tex/latex/lipsum/lipsum.ltd.tex))
+(/usr/share/texmf-dist/tex/latex/svg/svg.sty
 Package: svg 2020/11/26 v2.02k (include SVG pictures)
 
 (/usr/share/texmf-dist/tex/generic/iftex/iftex.sty
@@ -538,9 +556,9 @@ Package: trimspaces 2009/09/17 v1.1 Trim spaces around a token list
 Package: shellesc 2023/07/08 v1.0d unified shell escape interface for LaTeX
 Package shellesc Info: Restricted shell escape enabled on input line 77.
 )
-\c@svg@param@lastpage=\count314
-\svg@box=\box67
-\c@svg@param@currpage=\count315
+\c@svg@param@lastpage=\count318
+\svg@box=\box68
+\c@svg@param@currpage=\count319
 )
 (/usr/share/texmf-dist/tex/latex/transparent/transparent.sty
 Package: transparent 2022-10-27 v1.5 Transparency with color stacks
@@ -553,44 +571,111 @@ Package: transparent-nometadata 2022-10-27 v1.5 Transparency via pdfTeX's color
 Package: auxhook 2019-12-17 v1.6 Hooks for auxiliary files (HO)
 )))
 (/usr/share/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrary
+automata.code.tex
+File: tikzlibraryautomata.code.tex 2023-01-15 v3.1.10 (3.1.10)
+
+(/usr/share/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrary
+shapes.multipart.code.tex
+File: tikzlibraryshapes.multipart.code.tex 2023-01-15 v3.1.10 (3.1.10)
+
+(/usr/share/texmf-dist/tex/generic/pgf/libraries/shapes/pgflibraryshapes.multip
+art.code.tex
+File: pgflibraryshapes.multipart.code.tex 2023-01-15 v3.1.10 (3.1.10)
+\pgfnodepartlowerbox=\box69
+\pgfnodeparttwobox=\box70
+\pgfnodepartthreebox=\box71
+\pgfnodepartfourbox=\box72
+\pgfnodeparttwentybox=\box73
+\pgfnodepartnineteenbox=\box74
+\pgfnodeparteighteenbox=\box75
+\pgfnodepartseventeenbox=\box76
+\pgfnodepartsixteenbox=\box77
+\pgfnodepartfifteenbox=\box78
+\pgfnodepartfourteenbox=\box79
+\pgfnodepartthirteenbox=\box80
+\pgfnodeparttwelvebox=\box81
+\pgfnodepartelevenbox=\box82
+\pgfnodeparttenbox=\box83
+\pgfnodepartninebox=\box84
+\pgfnodeparteightbox=\box85
+\pgfnodepartsevenbox=\box86
+\pgfnodepartsixbox=\box87
+\pgfnodepartfivebox=\box88
+)))
+(/usr/share/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrary
 positioning.code.tex
 File: tikzlibrarypositioning.code.tex 2023-01-15 v3.1.10 (3.1.10)
 )
-(/usr/share/texmf-dist/tex/latex/l3backend/l3backend-pdftex.def
-File: l3backend-pdftex.def 2024-05-08 L3 backend support: PDF output (pdfTeX)
-\l__color_backend_stack_int=\count316
-\l__pdf_internal_box=\box68
-) (./main.aux)
+(/usr/share/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrary
+shapes.code.tex
+File: tikzlibraryshapes.code.tex 2023-01-15 v3.1.10 (3.1.10)
+
+(/usr/share/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrary
+shapes.geometric.code.tex
+File: tikzlibraryshapes.geometric.code.tex 2023-01-15 v3.1.10 (3.1.10)
+
+(/usr/share/texmf-dist/tex/generic/pgf/libraries/shapes/pgflibraryshapes.geomet
+ric.code.tex
+File: pgflibraryshapes.geometric.code.tex 2023-01-15 v3.1.10 (3.1.10)
+))
+(/usr/share/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrary
+shapes.misc.code.tex
+File: tikzlibraryshapes.misc.code.tex 2023-01-15 v3.1.10 (3.1.10)
+
+(/usr/share/texmf-dist/tex/generic/pgf/libraries/shapes/pgflibraryshapes.misc.c
+ode.tex
+File: pgflibraryshapes.misc.code.tex 2023-01-15 v3.1.10 (3.1.10)
+))
+(/usr/share/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrary
+shapes.symbols.code.tex
+File: tikzlibraryshapes.symbols.code.tex 2023-01-15 v3.1.10 (3.1.10)
+
+(/usr/share/texmf-dist/tex/generic/pgf/libraries/shapes/pgflibraryshapes.symbol
+s.code.tex
+File: pgflibraryshapes.symbols.code.tex 2023-01-15 v3.1.10 (3.1.10)
+))
+(/usr/share/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrary
+shapes.arrows.code.tex
+File: tikzlibraryshapes.arrows.code.tex 2023-01-15 v3.1.10 (3.1.10)
+
+(/usr/share/texmf-dist/tex/generic/pgf/libraries/shapes/pgflibraryshapes.arrows
+.code.tex
+File: pgflibraryshapes.arrows.code.tex 2023-01-15 v3.1.10 (3.1.10)
+))
+(/usr/share/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrary
+shapes.callouts.code.tex
+(/usr/share/texmf-dist/tex/generic/pgf/libraries/shapes/pgflibraryshapes.callou
+ts.code.tex))) (./main.aux)
 \openout1 = `main.aux'.
 
-LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 28.
-LaTeX Font Info:    ... okay on input line 28.
-LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 28.
-LaTeX Font Info:    ... okay on input line 28.
-LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 28.
-LaTeX Font Info:    ... okay on input line 28.
-LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 28.
-LaTeX Font Info:    ... okay on input line 28.
-LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 28.
-LaTeX Font Info:    ... okay on input line 28.
-LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 28.
-LaTeX Font Info:    ... okay on input line 28.
-LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 28.
-LaTeX Font Info:    ... okay on input line 28.
+LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for OMS/cmsy/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for OT1/cmr/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for T1/cmr/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for TS1/cmr/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for OMX/cmex/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
+LaTeX Font Info:    Checking defaults for U/cmr/m/n on input line 31.
+LaTeX Font Info:    ... okay on input line 31.
 
 -- Lines per column: 56 (exact).
 (/usr/share/texmf-dist/tex/context/base/mkii/supp-pdf.mkii
 [Loading MPS to PDF converter (version 2006.09.02).]
-\scratchcounter=\count317
+\scratchcounter=\count320
 \scratchdimen=\dimen282
-\scratchbox=\box69
-\nofMPsegments=\count318
-\nofMParguments=\count319
+\scratchbox=\box89
+\nofMPsegments=\count321
+\nofMParguments=\count322
 \everyMPshowfont=\toks36
-\MPscratchCnt=\count320
+\MPscratchCnt=\count323
 \MPscratchDim=\dimen283
-\MPnumerator=\count321
-\makeMPintoPDFobject=\count322
+\MPnumerator=\count324
+\makeMPintoPDFobject=\count325
 \everyMPtoPDFconversion=\toks37
 ) (/usr/share/texmf-dist/tex/latex/epstopdf-pkg/epstopdf-base.sty
 Package: epstopdf-base 2020-01-24 v2.11 Base part for package epstopdf
@@ -601,26 +686,21 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-LaTeX Font Info:    Calculating math sizes for size <11> on input line 60.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 60.
+LaTeX Font Info:    Calculating math sizes for size <11> on input line 63.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 63.
 
 
 (/usr/share/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 60.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 63.
 
 
 (/usr/share/texmf-dist/tex/latex/amsfonts/umsb.fd
 File: umsb.fd 2013/01/14 v3.01 AMS symbols B
-) (./introduction.tex)
-Underfull \hbox (badness 10000) in paragraph at lines 3--71
-
- []
-
-(./background.tex
-Underfull \hbox (badness 10000) in paragraph at lines 3--4
-
+) (./introduction.tex
+Underfull \hbox (badness 1694) in paragraph at lines 3--4
+\OT1/ptm/m/n/10 worse per-for-mance than ap-pli-ca-tions tar-geted schedul-ing
  []
 
 
@@ -629,6 +709,31 @@ Underfull \hbox (badness 10000) in paragraph at lines 3--4
  []
 
 
+Underfull \hbox (badness 10000) in paragraph at lines 5--6
+
+ []
+
+
+Underfull \hbox (badness 2368) in paragraph at lines 7--8
+\OT1/ptm/m/n/10 be-tween the two. The sec-ond ap-proach are sched-ulers
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 7--8
+
+ []
+
+
+
+) (./background.tex
+Underfull \hbox (badness 10000) in paragraph at lines 3--4
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 3--4
+
+ []
 
 
 Underfull \hbox (badness 10000) in paragraph at lines 7--8
@@ -651,6 +756,12 @@ Underfull \hbox (badness 10000) in paragraph at lines 12--13
  []
 
 
+
+[1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}{/usr/share/texmf-dist/fon
+ts/enc/dvips/base/8r.enc}
+
+
+]
 Underfull \hbox (badness 2486) in paragraph at lines 21--22
 \OT1/ptm/m/n/10 to com-mu-ni-cate its schedul-ing de-ci-sions. They achieve
  []
@@ -666,12 +777,6 @@ Underfull \hbox (badness 10000) in paragraph at lines 21--22
  []
 
 
-
-[1{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}{/usr/share/texmf-dist/fon
-ts/enc/dvips/base/8r.enc}
-
-
-]
 Underfull \hbox (badness 10000) in paragraph at lines 28--29
 
  []
@@ -684,6 +789,8 @@ LaTeX Warning: Reference `fig:sched-classes' on page 2 undefined on input line
 Underfull \hbox (badness 10000) in paragraph at lines 30--33
 
  []
+
+
 
 Package svg Info: Last page of `./svg-inkscape/linux-scheduling-class_svg-tex.p
 df' is 1 on input line 36.
@@ -707,8 +814,6 @@ Underfull \hbox (badness 10000) in paragraph at lines 80--81
  []
 
 
-
-
 Underfull \hbox (badness 10000) in paragraph at lines 82--85
 
  []
@@ -717,6 +822,8 @@ Underfull \hbox (badness 10000) in paragraph at lines 82--85
 LaTeX Warning: Citation `' on page 2 undefined on input line 86.
 
 ) (./saakm.tex
+
+[2 <./svg-inkscape/linux-scheduling-class_svg-tex.pdf>]
 Underfull \hbox (badness 10000) in paragraph at lines 9--10
 
  []
@@ -727,8 +834,6 @@ Underfull \hbox (badness 10000) in paragraph at lines 11--12
  []
 
 
-
-[2 <./svg-inkscape/linux-scheduling-class_svg-tex.pdf>]
 Underfull \hbox (badness 1571) in paragraph at lines 15--16
 \OT1/ptm/m/n/10 pos-si-ble. As the sched-uler is a criti-a-cal part re-gard-ing
 
@@ -759,6 +864,8 @@ Underfull \hbox (badness 10000) in paragraph at lines 21--22
  []
 
 
+
+
 Underfull \hbox (badness 10000) in paragraph at lines 23--24
 
  []
@@ -774,9 +881,9 @@ Package pdftex.def Info: ./svg-inkscape/linux-saakm-class_svg-tex.pdf , page1 u
 sed on input line 56.
 (pdftex.def)             Requested size: 232.19843pt x 68.57573pt.
 )
-
 LaTeX Font Info:    Trying to load font information for OT1+pcr on input line 3
 7.
+
 (/usr/share/texmf-dist/tex/latex/psnfss/ot1pcr.fd
 File: ot1pcr.fd 2001/06/04 font definitions for OT1/pcr.
 )
@@ -795,97 +902,184 @@ Underfull \hbox (badness 10000) in paragraph at lines 41--42
  []
 
 
-Underfull \hbox (badness 2443) in paragraph at lines 43--44
+
+[3 <./svg-inkscape/linux-saakm-class_svg-tex.pdf>]
+Underfull \hbox (badness 2443) in paragraph at lines 43--45
 []\OT1/ptm/b/n/10 Thread states \OT1/ptm/m/n/10 We de-fine our own thread state
 s to
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 43--44
+Underfull \hbox (badness 10000) in paragraph at lines 43--45
+\OT1/pcr/m/n/10 change_state(task, next_state, next_cpu,
+ []
+
+
+Underfull \hbox (badness 2460) in paragraph at lines 43--45
+\OT1/pcr/m/n/10 next_rq) \OT1/ptm/m/n/10 that is the core of SaaKM threads stat
+es
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 43--45
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 45--46
+Underfull \hbox (badness 10000) in paragraph at lines 46--47
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 48--50
 
  []
 
 
 
-[3 <./svg-inkscape/linux-saakm-class_svg-tex.pdf>]
-Underfull \hbox (badness 10000) in paragraph at lines 47--49
 
- []
-
-
-Underfull \hbox (badness 5637) in paragraph at lines 50--52
+Underfull \hbox (badness 5637) in paragraph at lines 51--53
 []\OT1/ptm/b/n/10 Hardware topol-ogy \OT1/ptm/m/n/10 To al-low poli-cies to pro
 p-erly
  []
 
 
-Underfull \hbox (badness 5954) in paragraph at lines 50--52
+Underfull \hbox (badness 5954) in paragraph at lines 51--53
 \OT1/ptm/m/n/10 make load bal-anc-ing, we ex-port a per-cpu vari-able,
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 50--52
+Underfull \hbox (badness 10000) in paragraph at lines 51--53
+
+ []
+
+Package svg Info: Last page of `./svg-inkscape/saakm-states_svg-tex.pdf' is 1 o
+n input line 84.
+(./svg-inkscape/saakm-states_svg-tex.pdf_tex
+<./svg-inkscape/saakm-states_svg-tex.pdf, id=93, page=1, 551.05875pt x 242.4056
+2pt>
+File: ./svg-inkscape/saakm-states_svg-tex.pdf Graphic file (type pdf)
+<use ./svg-inkscape/saakm-states_svg-tex.pdf, page 1>
+Package pdftex.def Info: ./svg-inkscape/saakm-states_svg-tex.pdf , page1 used o
+n input line 56.
+(pdftex.def)             Requested size: 258.0pt x 113.49419pt.
+)
+Overfull \hbox (6.0pt too wide) in paragraph at lines 84--85
+ [][] 
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 95--96
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 86--87
-
- []
-
-
-Underfull \hbox (badness 4859) in paragraph at lines 88--89
+Underfull \hbox (badness 4859) in paragraph at lines 97--98
 []\OT1/ptm/b/n/10 Registering a pol-icy \OT1/ptm/m/n/10 To reg-is-ter a pol-icy
 , dur-ing
  []
 
 
-Underfull \hbox (badness 5802) in paragraph at lines 88--89
+Underfull \hbox (badness 5802) in paragraph at lines 97--98
 \OT1/ptm/m/n/10 its ini-tial-iza-tion, a mod-ule must al-lo-cate and fill a
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 88--89
+Underfull \hbox (badness 10000) in paragraph at lines 97--98
 
  []
 
 
-
-
-Underfull \hbox (badness 10000) in paragraph at lines 90--91
+Underfull \hbox (badness 10000) in paragraph at lines 99--100
 []\OT1/ptm/b/n/10 Selecting a pol-icy \OT1/ptm/m/n/10 Se-lect-ing a pol-icy is 
 pretty
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 90--91
+Underfull \hbox (badness 10000) in paragraph at lines 99--100
 \OT1/ptm/m/n/10 struc-ture and set the \OT1/pcr/m/n/10 sched_policy \OT1/ptm/m/
 n/10 field to
  []
 
 
-Underfull \hbox (badness 2856) in paragraph at lines 90--91
+Underfull \hbox (badness 2856) in paragraph at lines 99--100
 \OT1/ptm/m/n/10 SCHED[]SAAKM and set the \OT1/pcr/m/n/10 sched_saakm_policy
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 90--91
+Underfull \hbox (badness 10000) in paragraph at lines 99--100
 
  []
 
 
-Underfull \hbox (badness 10000) in paragraph at lines 92--93
+Underfull \hbox (badness 10000) in paragraph at lines 101--103
 
  []
 
-) (./evaluation.tex
 
-[4]) (./future_works.tex) (./conclusion.tex) (./main.bbl)
+
+[4 <./svg-inkscape/saakm-states_svg-tex.pdf>]) (./evaluation.tex
+Underfull \hbox (badness 5548) in paragraph at lines 3--4
+\OT1/ptm/m/n/10 per-for-mance. We pre-sesnt a min-i-mal FIFO sched-uler
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 3--4
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 6--7
+
+ []
+
+
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 8--9
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 10--11
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 18--19
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 20--21
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 23--24
+
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 25--26
+
+ []
+
+
+
+[5]) (./future_works.tex) (./conclusion.tex
+Underfull \hbox (badness 3954) in paragraph at lines 2--3
+[]\OT1/ptm/m/n/10 Through this work we pre-sented SaaKM, a ker-nel
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 2--3
+
+ []
+
+) (./main.bbl
+
+)
 
 ** Conference Paper **
 Before submitting the final camera ready copy, remember to:
@@ -899,11 +1093,7 @@ Before submitting the final camera ready copy, remember to:
 
 
 
-
-
-[5
-
-] (./main.aux)
+[6] (./main.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
@@ -914,22 +1104,25 @@ LaTeX Warning: There were undefined references.
 
  ) 
 Here is how much of TeX's memory you used:
- 15468 strings out of 475142
- 310623 string characters out of 5765946
- 707123 words of memory out of 5000000
- 38146 multiletter control sequences out of 15000+600000
+ 17849 strings out of 475142
+ 378473 string characters out of 5765946
+ 895421 words of memory out of 5000000
+ 40467 multiletter control sequences out of 15000+600000
  604043 words of font info for 129 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  94i,11n,93p,1446b,477s stack positions out of 10000i,1000n,20000p,200000b,200000s
-</usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy7.pfb></usr/share/t
-exmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/share/texmf-dist/fonts/type1
-/urw/times/utmb8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmbi8a.pfb>
-</usr/share/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texmf-dist/
-fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (5 pages, 149890 bytes).
+</usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/
+texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texmf-dist/font
+s/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf-dist/fonts/type1/public/
+amsfonts/cm/cmsy10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cm
+sy7.pfb></usr/share/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/share/t
+exmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texmf-dist/fonts/type1/u
+rw/times/utmbi8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></
+usr/share/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
+Output written on main.pdf (6 pages, 234805 bytes).
 PDF statistics:
- 126 PDF objects out of 1000 (max. 8388607)
- 70 compressed objects within 1 object stream
+ 181 PDF objects out of 1000 (max. 8388607)
+ 100 compressed objects within 1 object stream
  0 named destinations out of 1000 (max. 500000)
- 33 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 43 words of extra memory for PDF output out of 10000 (max. 10000000)
 

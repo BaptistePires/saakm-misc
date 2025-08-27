@@ -53,9 +53,11 @@ while IFS=';' read name command input_file; do
         
 
         for i in $(seq 1 $NR_RUNS); do
+                # output_file="${benchmark_ouput_dir}/$((i + FILENAME_NR_SHIFT)).txt"
+                # command="${command} -j ${benchmark_ouput_dir}/$i.json"
+                # echo $command   
                 output_file="${benchmark_ouput_dir}/$((i + FILENAME_NR_SHIFT)).txt"
-                command="${command} -j ${benchmark_ouput_dir}/$i.json"
-                echo $command   
+                echo $command
                 clear_caches
                 $schedstart_bin $scheduler_framework 0 $command < $input_file | tee $output_file
 
