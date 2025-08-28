@@ -30,37 +30,37 @@
         \item Definir ce à quoi on se compare
         \item Présenter l'env et les benchmarks et les motiver
         \item Présentation et analyse des résultats
-\end{itemize} 
+\end{itemize}
 
 \note{pour le tableau, est-ce que je laisse comme ça ou je remets les pourcentage sans prendre en compte lower/higher is better et je rajoute une petite colonne pour indiquer la lecture de la ligne ? (lower/higher)}
 
-\begin{table}[htbp]
+\begin{table*}[p]
         \centering
-        \caption{Benchmarks results. The Gain/Loss column represents the difference between ext and SaaKM in percentage.}\label{tab:bench-res}
+        \caption{Benchmarks results. The Gain/Loss column represents the difference between ext and SaaKM in percentage.}
+        \label{tab:bench-res}
         \begin{tabular}{|l|l|l|l|}
         % \toprule
         \hline
                 Application (metric) & ext & SaaKM & Gain/Loss \\
                 \hline
-                        blender (s)& 141.96 & 141.83 & 0.09\% \\
-                        build-linux-kernel (s) & 214.66 & 215.31 & -0.3\% \\
-                        cassandra (Ops/s) & 102458 .62 & 104679.08 & 2.14\% \\
-                        clickhouse (Query/minuute)  & 125.63 & 124.09 & \textbf{-1.23}\% \\
-                        cloverleaf (s) & 152.81 & 153.09 & -0.18\% \\
-                        7zip - Compression (MIPS) & 58119.4 & 57426.78 & -1.2\% \\
-                        7zip - Decompress (MIPS) & 70908.98 & 71126.26 & 0.31\% \\
-                        dav1d (fps) & 188.02 & 188.64 & 0.33\% \\
-                        ffmpeg (fps) & 211.36 & 211.49 & 0.06\% \\
-                        hackbench (s) & 33.03 & 32.61 & 1.27\% \\
-                        namd (ns/day) & 0.64 & 0.64 & 0.13\% \\
-                        npb (Mop/s)& 21716.49 & 22151.99 & 1.99\% \\
-                        rbenchmark (s) & 0.57 & 0.57 & -0.22\% \\
-                        stockfish (nps) & 8392488.3 & 8427082.62 & 0.41\% \\
-                        svt-av1 (fps) & 95.09 & 95.13 & 0.04\% \\
-                        x265 (fps) & 57.5 & 58.94 & \textbf{2.48}\% \\
+                blender & 141.96 ($\pm$ 1.13) & 141.83 ($\pm$ 1.11) & -0.09 \\
+                build-linux-kernel & 214.66 ($\pm$ 2.63) & 215.31 ($\pm$ 2.17) & 0.30 \\
+                cassandra & 102458.62 ($\pm$ 1448.12) & 104679.08 ($\pm$ 1428.35) & 2.14 \\
+                clickhouse & 118.79 ($\pm$ 3.97) & 119.47 ($\pm$ 3.80) & 0.57 \\
+                cloverleaf & 152.81 ($\pm$ 0.34) & 153.09 ($\pm$ 0.45) & 0.18 \\
+                compress-7zip & 58119.40 ($\pm$ 367.40) & 57426.78 ($\pm$ 275.20) & -1.20 \\
+                dav1d & 188.02 ($\pm$ 0.34) & 188.64 ($\pm$ 0.32) & 0.33 \\
+                ffmpeg & 211.36 ($\pm$ 0.52) & 211.49 ($\pm$ 0.40) & 0.06 \\
+                hackbench & 33.03 ($\pm$ 0.10) & 32.61 ($\pm$ 0.07) & -1.27 \\
+                namd & 0.64 ($\pm$ 0.00) & 0.64 ($\pm$ 0.00) & 0.13 \\
+                npb & 21716.49 ($\pm$ 1497.52) & 22151.99 ($\pm$ 1700.25) & 1.99 \\
+                rbenchmark & 0.57 ($\pm$ 0.00) & 0.57 ($\pm$ 0.00) & 0.22 \\
+                stockfish & 8392488.30 ($\pm$ 47463.53) & 8427082.62 ($\pm$ 43999.91) & 0.41 \\
+                svt-av1 & 95.09 ($\pm$ 0.14) & 95.13 ($\pm$ 0.13) & 0.04 \\
+                x265 & 57.50 ($\pm$ 1.21) & 58.94 ($\pm$ 1.32) & 2.48 \\
                 \hline
         
 \end{tabular}
         
 
-\end{table}
+\end{table*}

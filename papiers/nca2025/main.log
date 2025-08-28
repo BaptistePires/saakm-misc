@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2026/dev/Arch Linux) (preloaded format=pdflatex 2025.4.18)  27 AUG 2025 23:49
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2026/dev/Arch Linux) (preloaded format=pdflatex 2025.4.18)  28 AUG 2025 17:34
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -1093,7 +1093,7 @@ Before submitting the final camera ready copy, remember to:
 
 
 
-[6] (./main.aux)
+[6] [7] (./main.aux)
  ***********
 LaTeX2e <2024-11-01> patch level 2
 L3 programming layer <2025-01-18>
@@ -1104,10 +1104,10 @@ LaTeX Warning: There were undefined references.
 
  ) 
 Here is how much of TeX's memory you used:
- 17849 strings out of 475142
- 378473 string characters out of 5765946
- 895421 words of memory out of 5000000
- 40467 multiletter control sequences out of 15000+600000
+ 17851 strings out of 475142
+ 378529 string characters out of 5765946
+ 892421 words of memory out of 5000000
+ 40469 multiletter control sequences out of 15000+600000
  604043 words of font info for 129 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  94i,11n,93p,1446b,477s stack positions out of 10000i,1000n,20000p,200000b,200000s
@@ -1115,14 +1115,15 @@ Here is how much of TeX's memory you used:
 texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texmf-dist/font
 s/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf-dist/fonts/type1/public/
 amsfonts/cm/cmsy10.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cm
-sy7.pfb></usr/share/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/share/t
-exmf-dist/fonts/type1/urw/times/utmb8a.pfb></usr/share/texmf-dist/fonts/type1/u
-rw/times/utmbi8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></
-usr/share/texmf-dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (6 pages, 234805 bytes).
+sy7.pfb></usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmsy8.pfb></usr/s
+hare/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/share/texmf-dist/fonts
+/type1/urw/times/utmb8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmbi8
+a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texmf
+-dist/fonts/type1/urw/times/utmri8a.pfb>
+Output written on main.pdf (7 pages, 242447 bytes).
 PDF statistics:
- 181 PDF objects out of 1000 (max. 8388607)
- 100 compressed objects within 1 object stream
+ 192 PDF objects out of 1000 (max. 8388607)
+ 107 compressed objects within 2 object streams
  0 named destinations out of 1000 (max. 500000)
  43 words of extra memory for PDF output out of 10000 (max. 10000000)
 
