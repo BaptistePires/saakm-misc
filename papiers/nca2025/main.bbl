@@ -38,6 +38,17 @@ J.~T. Humphries, N.~Natu, A.~Chaugule, O.~Weisse, B.~Rhoden, J.~Don, L.~Rizzo,
   [Online]. Available: \url{https://doi.org/10.1145/3477132.3483542}
 \BIBentrySTDinterwordspacing
 
+\bibitem{shenango}
+\BIBentryALTinterwordspacing
+A.~Ousterhout, J.~Fried, J.~Behrens, A.~Belay, and H.~Balakrishnan, ``Shenango:
+  Achieving high {CPU} efficiency for latency-sensitive datacenter workloads,''
+  in \emph{16th {USENIX} Symposium on Networked Systems Design and
+  Implementation, {NSDI} 2019, Boston, MA, February 26-28, 2019}, J.~R. Lorch
+  and M.~Yu, Eds.\hskip 1em plus 0.5em minus 0.4em\relax {USENIX} Association,
+  2019, pp. 361--378. [Online]. Available:
+  \url{https://www.usenix.org/conference/nsdi19/presentation/ousterhout}
+\BIBentrySTDinterwordspacing
+
 \bibitem{skyloft}
 \BIBentryALTinterwordspacing
 Y.~Jia, K.~Tian, Y.~You, Y.~Chen, and K.~Chen, ``Skyloft: {A} general

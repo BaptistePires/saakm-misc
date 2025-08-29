@@ -7,7 +7,7 @@
 
 \par \textbf{Benchmarks} We used the Phoronix test suite\cite{phoronix} software to run our benchmarks and the hackbench\cite{hackbench} scheduler benchmark. We run each applications 50 times and clean the kernel caches between each run. We present the mean and the standard deviation of our results. \newline
 
-\par \textbf{Evaluated schedulers} In order to compare ourselves to existing solutions, we implement a FIFO scheduler using SaaKM and sched\_ext. The goal is to have both take the same scheduling decisions to see if our solution add or remove overhead. Each policy has a per-cpu local FIFO runqueue. Threads are always enqueued on the same CPU based on their PID. We do not perform any load balancing to simplify the design and to have more consistent results.\note{pas sûr de ça}\newline
+\par \textbf{Evaluated schedulers} In order to compare ourselves to existing solutions, we implement a FIFO scheduler using SaaKM and sched\_ext. The goal is to have both take the same scheduling decisions to see if our solution add or remove overhead. Each policy has a per-cpu local FIFO runqueue. Threads are always enqueued on the same CPU based on their PID. We do not perform any load balancing to simplify the design and to have more consistent results and have a more deterministic behabior.\note{pas sûr de ça} Only the threads of the benchmarks are switched ot the policies.\newline
 
 
 % We compare ourselves to the ext scheduler. We implement a minimal FIFO scheduler for comparaison. Functions to select CPUs are based on threads PIDs as e want to mesaure the overhead of SaaKM and not the efficiency of a scheduling algorithm. \\

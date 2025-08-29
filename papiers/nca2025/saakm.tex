@@ -8,21 +8,22 @@
 % \par In this section we present the disgn behind SaaKM,
 \par In this section we present the design of SaaKM, our framework for writing schedulers as Linux kernel modules. First we present the goals of our approach, then we detail the design architeture.\newline
 
-\subsection{Design goals} Writing schedulers in Linux is a tedious task so one of our main goals is to provide a simpler way to do that. The need to have a deep and wide knowledge of the Linux kernel can be a barrier also so we want to hide as much complexity as possible. Finally, testing and debugging a scheduler is also a criteria.\newline
+\subsection{Design goals} Writing schedulers in Linux is a tedious task so one of our main goals is to provide a simpler way to do that. The need to have a deep and wide knowledge of the Linux kernel can discourage users. We aim to hide as much complexity as possible. Finally, testing and debugging a scheduler is also a criteria.\newline
 
-\textbf{Ease of Use} An ideal solution would not require kernel developers to master a new langage nor a new subsystem of the kernel as it would defeat one the purpose of the solution, that is the accessibility part. By the nature of kernel development, they must already be knowledgeable in C and some of the kernel APIs and subsystems. Linux kernel modules answer perfectly to this need.
+\textbf{Ease of Use} An ideal solution would not require kernel developers to master a new langage nor a new subsystem of the kernel as it would defeat one the purpose of the solution, that is the accessibility part. By the nature of kernel development, they must already be knowledgeable in C and some of the kernel APIs and subsystems. Linux kernel modules answer perfectly to this need. Using modules also allows for a light chain of compilation wihtout relying on external tools.\newline
 
-\textbf{Performance} The solution must incur the lowest overhead possible. As the scheduler is a critiacal part regarding performances, even a small overhead can cause significant performances degradation. We must keep our solution as ligthweiht as possible, giving the users the choice to add features that can cause this overhead if they want to.\newline
+\textbf{Performance} The solution must incur the lowest overhead possible. As the scheduler is a critical part regarding performances, even a small overhead can cause significant performances degradation. We must keep our solution as ligthweiht as possible in order to not loss perforamnces\note{reformuler}\newline
 
-\textbf{Testing and Debugging} The current process of debuging and testing a scheduler class require to recompile and redeploy your kernel image each time you make a modification. This can be quite time consuming and slow down the development process. That is why our solution must not be quick and easy to test without the need reboot your machine.\newline
+\textbf{Testing and Debugging} The current process of debuging and testing a scheduler class require to recompile and redeploy your kernel image each time you make a modification. This can be quite time consuming and slow down the development process. Our solution must allow users to deploy, test and debug their schedulers quickly without the need to reboot the target.\newline
 \subsection{Design overview}
 \par SaaKM is an API to write schedulers as Linux kernel modules. It exposes a minimal set of exported functions to the modules that can be used to allocate, manage and destroy scheduling policies and data. Figure \ref{fig:sched-class-saakm} shows how SaAKM integrates itself with the current scheduling classes. We position ourselves right before the idle class to not disrupt higher priority classes that other threads runs.\newline
 
 \par All of the SaaKM design relies on a structure composed of handlers that each policy must implement. Each handler maps to a scheduling event. Events are devided into two categories. Thread events correspond to all scheduling events related to a thread (e.g threak is created, waking up, ...). On the other hand, core events are related to the CPU cores (e.g scheduling tick, core becoming idle, ...). This distinction makes it clear for the user to know what it should do, hiding the complexity of the scheduling class API where a single function can be called from multiple paths. For instance, the enqueue\_task function of the scheduling class can be called from numerous places and for different reasons. It can be for a newly forked task, a migrating task, a waking up task. Our goal is to isolated those cases to let the user know what is actually happening without having to how it got called. Table \ref{tab:saakm-callbacks} shows an excerpt of those events.\newline
 
-\par Furthermore, this division allows us to hide the complexity of the syucrhonization mecanisms of the core scheduler. As multicore and NUMA architectures are the quite common now, the scheduler must synchroniza data across cores quite often as two core may access the same data. It protects these data through the usage of locks, RCU and low level synchronization mecanisms like memory barriers. Thanks to our design, the user does not need to worry about these and assume that it has the right locks on the data whenever it is needed.\note{réecrire cette partie} \newline
+\par Furthermore, this division allows us to hide the complexity of the syucrhonization mecanisms of the core scheduler. As multicore and NUMA architectures are quite common now, the scheduler must syncrhonize data across cores quite often as two core may access the same data concurrently. It protects these data through the usage of locks, RCU and low level synchronization mecanisms like memory barriers. Thanks to our design, the user does not need to worry about these and assume that it has the right locks on the data whenever it is needed.\note{réecrire cette partie} \newline
 
-\par To increase the flexibility of our solution, we support to have multiple policies loaded at the same time. This allows applications to have the right scheduler tailored for their needs.\note{completer}
+\par To increase the flexibility of our solution, we support to have multiple policies loaded at the same time. This allows applications to chose the scheduler that is tailored to their needs.
+% \par To increase the flexibility of our solution, we support to have multiple policies loaded at the same time. This allows applications to have the right scheduler tailored for their needs.\note{completer}
 
 \begin{figure}[htbp]
         \centering
@@ -52,33 +53,7 @@ Policies should also be able to do load balacing when a CPU is becoming idle. Wh
 % \par Futhermore, this division allows us to hide the complex synchronization mecanisms of the core scheduler. For instance, there is a rule that if you need to lock multiple runqueue, on top of the overhead it might causes, you must always lock them in the correct order (i.e. the runqueue whose CPU id is the lowest must always be locked first
 
 \par \textbf{Multi-policy support} SaaKM supports to have multiple policies loaded at the same time. When it registers, it is given an unique incremental id that is used by application to select their policy. We then maintain them in a linked list ordered by insertion order. When a new thread must be elected, we go through the list of policies starting from the head of the list. The first policy to return a non NULL thread stops the search and the thread is elected. For load balancing, we also go through the full list to make sure that all policies can perform their load balance.
-% \begin{table}[htbp]
-%         % \centering
-%         \caption{SaaKM thread states}
-%         \begin{tabular}{|l|l|}
-%         % \toprule
-%         \hline
-%         \textbf{State} & \textbf{Meaning} \\
-%         % \midrule
-%                 \hline
-%                 \texttt{SAAKM\_NOT\_QUEUED} & Not in a runqueue \\
-%                 \hline
-%                 \texttt{SAAKM\_MIGRATING} & Being migrated \\
-%                 \hline
-%                 \texttt{SAAKM\_RUNNING} & Running on a CPU \\
-%                 \hline
-%                 \texttt{SAAKM\_READY} & Ready to run and in a runqueue \\
-%                 \hline
-%                 \texttt{SAAKM\_READY\_TICK} & Became ready from a \textit{tick} event \\
-%                 \hline
-%                 \texttt{SAAKM\_BLOCKED} & Blocked and cannot run \\
-%                 \hline
-%                 \texttt{SAAKM\_TERMINATED} & Dead \\
-%                 \hline
-%         \end{tabular}
-        
-% \label{tab:saakm-states}
-% \end{table}
+
 \begin{figure}[htbp]
         \centering
         \includesvg[width=0.5\textwidth]{figures/saakm-states.svg}
@@ -162,7 +137,7 @@ thread transitions checks, print the wrongful transitions and print the scheduli
                 core\_entry(core) & \texttt{core} is becoming online\\
                 core\_exit(core) & \texttt{core} is going offline\\
                 % \midrule
-        % \bottomrule
+                % \bottomrule
                 \hline 
 
                 \textbf{Policy management} & \\
@@ -184,3 +159,30 @@ thread transitions checks, print the wrongful transitions and print the scheduli
 % \end{itemize}
 % \par 
 % In order to hide the complexity of the locks mecanisms and make it invisible to the user, we have to make the selection of a CPU and the actual enqueuing in two step. This is needed when a task \textit{p} is for waking up on CPU_0 but the scheduler decides that it should now run on CPU_1. Firstly, we need to lock CPU_0 to completly remove \textit{p} before we can enqueue it on CPU_1. \note{reecrire}
+% \begin{table}[htbp]
+%         % \centering
+%         \caption{SaaKM thread states}
+%         \begin{tabular}{|l|l|}
+%         % \toprule
+%         \hline
+%         \textbf{State} & \textbf{Meaning} \\
+%         % \midrule
+%                 \hline
+%                 \texttt{SAAKM\_NOT\_QUEUED} & Not in a runqueue \\
+%                 \hline
+%                 \texttt{SAAKM\_MIGRATING} & Being migrated \\
+%                 \hline
+%                 \texttt{SAAKM\_RUNNING} & Running on a CPU \\
+%                 \hline
+%                 \texttt{SAAKM\_READY} & Ready to run and in a runqueue \\
+%                 \hline
+%                 \texttt{SAAKM\_READY\_TICK} & Became ready from a \textit{tick} event \\
+%                 \hline
+%                 \texttt{SAAKM\_BLOCKED} & Blocked and cannot run \\
+%                 \hline
+%                 \texttt{SAAKM\_TERMINATED} & Dead \\
+%                 \hline
+%         \end{tabular}
+        
+% \label{tab:saakm-states}
+% \end{table}
