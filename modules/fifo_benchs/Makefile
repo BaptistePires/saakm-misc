@@ -1,4 +1,4 @@
-KERNEL_SRC=~/these/kernels/ipanema-kernel
+KERNEL_SRC=~/these/kernels/ipanema-copy
 obj-m += fifo.o
 
 all :

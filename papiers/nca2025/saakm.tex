@@ -16,7 +16,7 @@
 
 \textbf{Testing and Debugging} The current process of debuging and testing a scheduler class require to recompile and redeploy your kernel image each time you make a modification. This can be quite time consuming and slow down the development process. Our solution must allow users to deploy, test and debug their schedulers quickly without the need to reboot the target.\newline
 \subsection{Design overview}
-\par SaaKM is an API to write schedulers as Linux kernel modules. It exposes a minimal set of exported functions to the modules that can be used to allocate, manage and destroy scheduling policies and data. Figure \ref{fig:sched-class-saakm} shows how SaAKM integrates itself with the current scheduling classes. We position ourselves right before the idle class to not disrupt higher priority classes that other threads runs.\newline
+\par SaaKM is an API to write schedulers as Linux kernel modules. It exposes a minimal set of exported functions to the modules that can be used to allocate, manage and destroy scheduling policies and data. Fig. \ref{fig:sched-class-saakm} shows how SaAKM integrates itself with the current scheduling classes. We position ourselves right before the idle class to not disrupt higher priority classes that other threads runs.\newline
 
 \par All of the SaaKM design relies on a structure composed of handlers that each policy must implement. Each handler maps to a scheduling event. Events are devided into two categories. Thread events correspond to all scheduling events related to a thread (e.g threak is created, waking up, ...). On the other hand, core events are related to the CPU cores (e.g scheduling tick, core becoming idle, ...). This distinction makes it clear for the user to know what it should do, hiding the complexity of the scheduling class API where a single function can be called from multiple paths. For instance, the enqueue\_task function of the scheduling class can be called from numerous places and for different reasons. It can be for a newly forked task, a migrating task, a waking up task. Our goal is to isolated those cases to let the user know what is actually happening without having to how it got called. Table \ref{tab:saakm-callbacks} shows an excerpt of those events.\newline
 
@@ -41,7 +41,7 @@
 
 \par \textbf{Runqueues management} We provide a minimal runqueue definition that policies uses and includes in their own runqueues as a structure field. This allows to delegate the insertion/deletion and mandatory runqueue metadata fields to be handled by SaaKM. We provide three runqueue types. A FIFO, LIST and RED-BLACK tree. You must provide an ordering function for each type of runqueue, except for the FIFO that will always insert the task at the end of the queue. We provide these three types as they are the most common ones but thanks to its design it can be extended. Policies are required to initialize their runqueues before registering themselves.\newline 
 
-\par \textbf{Thread states} We define our own thread states to make to not interfer with the core scheduler. We define 7 states represented in Figure \ref{fig:saakm-states}. We have one special state, SAAKM\_READY\_TICK that allows policy to notify SaaKM that it needs to trigger a reschedule. With this states, we are able to check for wrongful transitions and provide debug feedback to the user at runtime. This ease the debugging and testing process. We provide a function \texttt{change\_state(task, next\_state, next\_cpu, next\_rq)} that is the core of SaaKM threads states managmenent Policies must call it anytime they want to alter the state of a thread giving it the right arguments. It is responsible of threads states management. It calls the core schedulers functions to keep the kernel related data correct. It also add and remove threads from the runqueues and check that the operation is valid (i.e. the correct locks are held). Threads states transitions checks is done in this function.
+\par \textbf{Thread states} We define our own thread states to make to not interfer with the core scheduler. We define 7 states represented in Fig. \ref{fig:saakm-states}. We have one special state, SAAKM\_READY\_TICK that allows policy to notify SaaKM that it needs to trigger a reschedule. With this states, we are able to check for wrongful transitions and provide debug feedback to the user at runtime. This ease the debugging and testing process. We provide a function \texttt{change\_state(task, next\_state, next\_cpu, next\_rq)} that is the core of SaaKM threads states managmenent Policies must call it anytime they want to alter the state of a thread giving it the right arguments. It is responsible of threads states management. It calls the core schedulers functions to keep the kernel related data correct. It also add and remove threads from the runqueues and check that the operation is valid (i.e. the correct locks are held). Threads states transitions checks is done in this function.
 \note{peut etre faire un diagramme d'etat qui montre la machine à etat et que c'est ça qui nous permet de detecter les erreurs ? mieux que tableau ?}\newline
 
 \par \textbf{Thread Migration} To handle thread migration that occurs because of affinity change or a \texttt{exec} rebalance (a newly created thread is being run on a diffrent CPU than its parent), we introduce a new flag, OUSTED. This flags allows us to know that we are being dequeued becuase of those reason so we can simulate a fast block/unblock sequence to remove the thread from its current runqueue and insert it into the new one. \newline
@@ -106,7 +106,7 @@ thread transitions checks, print the wrongful transitions and print the scheduli
 % \label{tab1}
 % \end{center}
 % \end{table}
-\begin{table}[htbp]
+\begin{table}[htbp!]
         % \centering
         \caption{Extract of \texttt{saakm\_module\_routines} functions}
         \begin{tabular}{|l|l|}
@@ -149,8 +149,8 @@ thread transitions checks, print the wrongful transitions and print the scheduli
                 setparam\_attr(sched\_attr) & Use sched\_attr to set values\\
                 \hline
         \end{tabular}
-        
-\label{tab:saakm-callbacks}
+        % \caption{Extract of \texttt{saakm\_module\_routines} functions}        
+        \label{tab:saakm-callbacks}
 \end{table}
 
 % \begin{itemize}

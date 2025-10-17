@@ -21,9 +21,15 @@
 \providecommand{\BIBdecl}{\relax}
 \BIBdecl
 
+\bibitem{hybridsched}
+\BIBentryALTinterwordspacing
+J.~Corbet. (2022, Sep.) Hybrid scheduling gets more complicated. LWN.net
+  article. [Online]. Available: \url{https://lwn.net/Articles/909611/}
+\BIBentrySTDinterwordspacing
+
 \bibitem{eevdf}
 \BIBentryALTinterwordspacing
-J.~Corbet, ``An eevdf cpu scheduler for linux,'' \emph{LWN.net}, Mar 2023, news
+------, ``An eevdf cpu scheduler for linux,'' \emph{LWN.net}, Mar 2023, news
   article. [Online]. Available: \url{https://lwn.net/Articles/925371/}
 \BIBentrySTDinterwordspacing
 

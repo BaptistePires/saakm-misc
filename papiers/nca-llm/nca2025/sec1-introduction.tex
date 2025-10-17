@@ -1,0 +1,34 @@
+% !TEX root = ./main.tex
+
+\section{Introduction}
+
+CPU scheduling is a fundamental aspect of operating systems that directly impacts both system performance and security. Modern computing environments present unprecedented challenges to schedulers: hardware has grown increasingly complex with heterogeneous architectures, NUMA topologies, and hybrid core designs, while applications demonstrate high concurrency patterns with hundreds or thousands of threads\cite{hybridsched}. The Linux kernel addresses these challenges through its general-purpose scheduler, the Earliest Eligible Virtual Deadline First (EEVDF) algorithm\cite{eevdf}, which replaced the Completely Fair Scheduler (CFS)~\cite{cfs} in version 6.6. While EEVDF represents a significant improvement over CFS, particularly for latency-sensitive workloads, its general-purpose design necessitates trade-offs that prevent optimal performance for specialized workloads\cite{ghost,shenango}.
+
+\parspace
+The complexity of implementing custom schedulers in Linux presents substantial barriers to innovation. Developing a scheduler requires deep understanding of kernel internals, complex synchronization mechanisms including RCU and memory barriers, and intricate interactions with multiple kernel subsystems. The multicore nature of modern systems introduces additional challenges around concurrency control, load balancing, and cache coherency that must be carefully managed. Moreover, traditional scheduler development involves a time-consuming cycle of kernel recompilation and system reboot for each iteration, making testing and debugging particularly challenging. Errors in scheduler implementations can lead to system crashes or data corruption, further complicating development efforts.
+
+\parspace
+Recognizing these challenges, the systems community has developed several approaches to simplify scheduler development. These solutions can be broadly categorized into two paradigms: userspace delegation and in-kernel extensibility. Userspace approaches, exemplified by ghOSt\cite{ghost} and Skyloft\cite{skyloft}, delegate scheduling decisions to userspace processes while maintaining a minimal kernel component for enforcement. This approach enables rapid development and testing but introduces communication overhead and potential reliability concerns. In-kernel extensibility approaches maintain scheduling logic within kernel space while providing higher-level programming interfaces. The recently merged ext scheduling class~\cite{schedext} (for the sake of simplicity we will call it \ext  from now on) in Linux 6.12 allows developers to implement schedulers as eBPF\cite{ebpf} programs, providing safety guarantees through the eBPF verifier while enabling dynamic loading and unloading. Similarly, Enoki\cite{enoki} leverages Rust's safety features to implement schedulers as kernel modules with memory safety guarantees.
+
+\parspace
+Despite these advances, existing solutions impose significant constraints on developers. Solutions like sched\_ext require mastering eBPF programming and its associated toolchain, while the eBPF verifier's restrictions can limit access to kernel data structures and complex control flow. Rust-based approaches like Enoki require learning a new programming language and its ecosystem. Userspace solutions introduce architectural complexity and potential performance overhead through kernel-userspace communication. These constraints create barriers that may discourage developers from experimenting with scheduling innovations.
+
+\parspace
+To address these limitations, we propose SaaKM (Schedulers as a Kernel Module), a framework that prioritizes developer accessibility while maintaining the performance and safety characteristics of in-kernel scheduling. SaaKM allows developers to implement schedulers using familiar C programming and standard Linux kernel module development practices, eliminating the need to learn new languages or specialized subsystems. The framework abstracts complex kernel interactions through a well-defined event-driven API, which simplifies development by clearly distinguishing thread lifecycle events from core management events.
+
+\parspace
+SaaKM introduces a comprehensive thread state machine that provides clear scheduling semantics while enabling runtime validation of state transitions for enhanced debugging. The framework supports multiple concurrent scheduling policies within the same system, allowing applications to select the most appropriate scheduler for their specific requirements. This flexibility enables fine-grained optimization strategies where different workload types can coexist under different scheduling policies simultaneously.
+
+\parspace
+The key contributions of this work are:
+
+\begin{itemize}
+\item A novel framework for implementing Linux schedulers as kernel modules that maintains compatibility with existing kernel development workflows
+\item An event-driven API abstraction that simplifies scheduler implementation by clearly delineating scheduling events and hiding synchronization complexity
+\item A comprehensive thread state machine with runtime validation for enhanced debugging and development experience  
+\item Support for multiple concurrent scheduling policies with per-application policy selection
+\item A performance evaluation comparing SaaKM with sched\_ext across various workloads and use cases
+\end{itemize}
+
+\parspace
+This paper is structured as follows. We first examine current approaches to scheduler development and their limitations. We then present the design and implementation of SaaKM, detailing its architecture and key abstractions. Following this, we evaluate SaaKM's performance and usability compared to existing solutions, particularly sched\_ext. Finally, we discuss the implications of our work and future research directions in scheduler development frameworks.

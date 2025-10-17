@@ -273,20 +273,24 @@ for benchmark_name in sorted(benchmarks_results.keys()):
         ipanema_mean = np.mean(results["ipanema"])
         if ext_mean != 0:
                 percent_diff = ((ipanema_mean - ext_mean) / ((ext_mean + ipanema_mean) / 2)) * 100
-
+                percent_diff_2 = ((ext_mean - ipanema_mean) / ext_mean) * 100
+                
                 if results["reading"] == LSB:
                         percent_diff = -percent_diff
+                        percent_diff_2 = -percent_diff_2
                         
+                print(benchmark_name, round(percent_diff,2), round(percent_diff_2,2))        
                 ext_std = np.std(results["ext"], ddof=1)
                 ipanema_std = np.std(results["ipanema"], ddof=1)
                 ext_n = len(results["ext"])
                 ipanema_n = len(results["ipanema"])
 
                 # 95% confidence interval for the mean
-                ext_ci = 1.96 * ext_std / np.sqrt(ext_n) if ext_n > 1 else 0
-                ipanema_ci = 1.96 * ipanema_std / np.sqrt(ipanema_n) if ipanema_n > 1 else 0
+                ext_ci = 1.95 * ext_std / np.sqrt(ext_n) if ext_n > 1 else 0
+                ipanema_ci = 1.95 * ipanema_std / np.sqrt(ipanema_n) if ipanema_n > 1 else 0
 
-                print(f'{benchmark_name.replace("_", "\\_")} & {round(np.mean(results["ext"]), 2)} ± {round(ext_ci, 2)} & {round(np.mean(results["ipanema"]), 2)} ± {round(ipanema_ci, 2)} & {round(percent_diff, 2)}\\% \\\\')
+                metric_label = "\\lsb" if results["reading"] == LSB else "\\hsb"
+                # print(f'{benchmark_name.replace("_", "\\_")} - {results["metric"]} & {metric_label} & {round(np.mean(results["ext"]), 2)} $\\pm$ {round(ext_ci, 2)} & {round(np.mean(results["ipanema"]), 2)} $\\pm$ {round(ipanema_ci, 2)} & {round(percent_diff, 2)}\\% \\\\')
                 percent_diffs.append(percent_diff)
                 benchmarks.append(benchmark_name)
 

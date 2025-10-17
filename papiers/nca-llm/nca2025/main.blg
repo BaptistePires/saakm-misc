@@ -1,0 +1,63 @@
+This is BibTeX, Version 0.99d (TeX Live 2026/dev/Arch Linux)
+Capacity: max_strings=200000, hash_size=200000, hash_prime=170003
+The top-level auxiliary file: main.aux
+The style file: biblio/IEEEtran.bst.bst
+Reallocated singl_function (elt_size=8) to 100 items from 50.
+Reallocated singl_function (elt_size=8) to 100 items from 50.
+Reallocated singl_function (elt_size=8) to 100 items from 50.
+Reallocated wiz_functions (elt_size=8) to 6000 items from 3000.
+Reallocated singl_function (elt_size=8) to 100 items from 50.
+Database file #1: biblio.bib
+Warning--entry type for "phoronix" isn't style-file defined
+--line 142 of file biblio.bib
+Warning--I'm ignoring phoronix's extra "note" field
+--line 149 of file biblio.bib
+Warning--entry type for "hackbench" isn't style-file defined
+--line 151 of file biblio.bib
+-- IEEEtran.bst version 1.12 (2007/01/11) by Michael Shell.
+-- http://www.michaelshell.org/tex/ieeetran/bibtex/
+-- See the "IEEEtran_bst_HOWTO.pdf" manual for usage information.
+
+Done.
+You've used 13 entries,
+            4024 wiz_defined-function locations,
+            893 strings with 10228 characters,
+and the built_in function-call counts, 9363 in all, are:
+= -- 726
+> -- 264
+< -- 45
++ -- 133
+- -- 53
+* -- 469
+:= -- 1496
+add.period$ -- 32
+call.type$ -- 13
+change.case$ -- 28
+chr.to.int$ -- 120
+cite$ -- 13
+duplicate$ -- 660
+empty$ -- 771
+format.name$ -- 64
+if$ -- 2088
+int.to.chr$ -- 0
+int.to.str$ -- 13
+missing$ -- 145
+newline$ -- 88
+num.names$ -- 20
+pop$ -- 373
+preamble$ -- 1
+purify$ -- 0
+quote$ -- 2
+skip$ -- 689
+stack$ -- 0
+substring$ -- 306
+swap$ -- 503
+text.length$ -- 5
+text.prefix$ -- 0
+top$ -- 5
+type$ -- 13
+warning$ -- 0
+while$ -- 36
+width$ -- 15
+write$ -- 174
+(There were 3 warnings)

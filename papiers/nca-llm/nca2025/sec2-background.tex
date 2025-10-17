@@ -1,0 +1,70 @@
+% !TEX root = ./main.tex
+
+\section{Background and Related Work}
+
+The Linux scheduler has undergone significant evolution to address the increasing complexity of modern computing environments. Understanding the current landscape of scheduler development approaches is essential to position our contribution effectively. This section examines existing solutions for custom scheduler development, categorizing them based on their execution paradigm and analyzing their respective trade-offs.
+
+\subsection{Evolution of Linux Schedulers}
+
+The Linux kernel's default process scheduler transitioned from the Completely Fair Scheduler (CFS) to the Earliest Eligible Virtual Deadline First (EEVDF) algorithm in version 6.6, released in 2024. EEVDF was first introduced in a scientific publication in 1995 and aims to distribute CPU time equally among all runnable tasks with the same priority by assigning virtual run times and calculating virtual deadlines for scheduling decisions. While EEVDF represents a significant improvement over CFS, particularly for latency-sensitive workloads, its general-purpose design necessitates trade-offs that prevent optimal performance for specialized applications.
+
+\parspace
+The traditional approach to scheduler modification involves directly implementing a new scheduling class within the kernel. The Linux scheduler architecture utilizes an extensible hierarchy of scheduling classes, where each class encapsulates specific scheduling policies and is handled by the scheduler core. However, this approach requires deep understanding of complex kernel internals, including synchronization mechanisms like RCU and memory barriers, making it accessible only to experienced kernel developers.
+
+\subsection{In-Kernel Scheduler Frameworks}
+
+Recent years have witnessed significant innovation in frameworks that enable custom scheduler development while maintaining execution within kernel space. These approaches aim to provide higher-level abstractions while preserving the performance characteristics of in-kernel scheduling.
+
+\textbf{sched\_ext: eBPF-Based Schedulers} The sched\_ext framework, merged into Linux 6.12, allows scheduling policies to be implemented as eBPF programs. sched\_ext exports a full scheduling interface through BPF struct\_ops, enabling any scheduling algorithm to be implemented while maintaining system integrity through the eBPF verifier. The framework provides safety guarantees by automatically reverting to the default scheduler when errors are detected or runnable tasks stall.
+
+\parspace
+The BPF verifier ensures that custom schedulers have neither memory bugs nor infinite loops, and the framework can update schedulers without kernel reinstallation or system reboot. However, eBPF's restrictions limit access to certain kernel data structures and complex control flow, while requiring developers to master eBPF programming and its associated toolchain.
+
+\parspace
+\textbf{Enoki: Rust-Based Schedulers} Enoki\cite{enoki} leverages Rust's safety features to implement schedulers as kernel modules. The framework provides memory safety guarantees while offering live update mechanisms that allow upgrading running schedulers without unloading previous versions. Enoki implements a record and replay mechanism for debugging scheduling events, though it requires developers to learn Rust and its ecosystem.
+
+\parspace
+\textbf{Plugsched: Live Scheduler Updates} Plugsched addresses the challenge of scheduler updates by modularizing the Linux scheduler subsystem. The approach uses boundary analysis to extract the scheduler from kernel code into a separate module, enabling dynamic replacement of the scheduler in running systems. Plugsched uses data rebuild techniques to migrate state from old to new schedulers, achieving downtime of less than tens of milliseconds. However, the approach requires careful boundary analysis and imposes constraints on data structure modifications.
+
+\subsection{Userspace Delegation Frameworks}
+
+An alternative paradigm delegates scheduling decisions to userspace processes while maintaining a minimal kernel component for enforcement. These approaches enable rapid development and testing but introduce architectural complexity and potential performance overhead.
+
+\parspace
+\textbf{ghOSt: Userspace Agents} Google's ghOSt provides general-purpose delegation of scheduling policies to userspace processes in a Linux environment, offering state encapsulation, communication, and action mechanisms that allow complex expression of scheduling policies within userspace agents. The framework supports policies for various scheduling objectives from microsecond-scale latency to throughput and energy efficiency, with many policies requiring only a few hundred lines of code.
+
+\parspace
+ghOSt's architecture separates scheduling logic from kernel interaction components through agents that run policies in userspace and communicate scheduling decisions to the kernel scheduling class via message queues and transactions. The framework supports rebootless upgrades and recovers from scheduler failures without triggering kernel panics by falling back to CFS when issues occur. Despite these advantages, ghOSt introduces communication overhead between kernel and userspace components and requires managing complex state synchronization.
+
+\parspace
+\textbf{Skyloft: Userspace Interrupts} Skyloft\cite{skyloft} takes a different approach by isolating CPU cores exclusively for userspace schedulers. The framework achieves microsecond-scale scheduling preemption by leveraging userspace interrupts (UINTR), bypassing kernel involvement for interrupt delivery. While this approach minimizes kernel overhead, it requires dedicated hardware support and CPU core isolation.
+
+\subsection{Analysis and Limitations}
+
+Each existing approach presents significant trade-offs that may discourage scheduler innovation:
+
+\parspace
+\textbf{Complexity Barriers}: sched\_ext requires mastering eBPF programming and its limitations, while Enoki demands learning Rust. Traditional kernel development requires extensive knowledge of complex synchronization mechanisms and kernel internals.
+
+\parspace
+\textbf{Performance Concerns}: Userspace approaches like ghOSt introduce communication overhead between kernel and userspace components. While the overhead is often acceptable, it may be problematic for latency-critical applications.
+
+\parspace
+\textbf{Flexibility Constraints}: eBPF's verifier restrictions can limit scheduler implementations, while approaches like Plugsched impose constraints on data structure modifications. Traditional kernel development requires lengthy recompilation and deployment cycles.
+
+\parspace
+\textbf{Deployment Complexity}: Some frameworks require significant infrastructure changes, custom kernel builds, or specialized build toolchains that may not be readily available in production environments.
+
+\subsection{Our Contribution}
+
+The analysis of existing frameworks reveals a gap for approaches that combine the familiarity of traditional kernel module development with the flexibility and safety of modern scheduler frameworks. Our work addresses this gap by providing a framework that:
+
+\begin{itemize}
+\item Uses familiar C programming and standard Linux kernel module development practices
+\item Provides clear abstractions that hide complex kernel synchronization mechanisms
+\item Supports rapid development and testing cycles without requiring specialized toolchains
+\item Enables multiple concurrent scheduling policies with per-application policy selection
+\item Maintains compatibility with existing kernel development workflows
+\end{itemize}
+
+This approach aims to lower the barrier to scheduler experimentation while maintaining the performance characteristics and safety guarantees necessary for production deployment.

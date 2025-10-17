@@ -1,0 +1,75 @@
+% !TEX root = ./main.tex
+
+\section{Evaluation}
+
+In this section, we evaluate the usability and performance of SaaKM. We present a minimal FIFO scheduler implemented both with SaaKM and the ext scheduler\cite{schedext}, which was recently merged into Linux kernel v6.12. We then compare the performance of both implementations across a set of benchmarks.
+
+We chose to compare against the ext scheduler because it is the most recent kernel-integrated framework, whereas other solutions did not meet our requirements. For example, Enoki\cite{enoki} targets Linux v5.11, which is 21 releases and 1224 commits behind v6.12 (specifically in the kernel/sched/ directory). Significant changes, such as the EEVDF merge, have affected the scheduler since then. Our focus is on comparing SaaKM to kernel-level scheduler frameworks rather than userspace solutions, which serve different purposes; therefore, we do not include ghOSt, which also targets kernel v5.11, in our evaluation.
+
+\subsection{Experimental Setup}
+\textbf{Benchmark platform} All experiments were conducted on a dedicated server running Debian 12 (Bookworm) with a custom-patched Linux kernel version 6.12. The system is equipped with an Intel(R) Core(TM) i9-10900K CPU (10 cores, 20 threads via SMT), 20MB L3 cache, and 64GB RAM. This configuration ensures sufficient computational resources and memory bandwidth to reliably evaluate scheduler performance under representative workloads. 
+
+\parspace
+\textbf{Benchmarks} We evaluate scheduler performance using a diverse set of workloads from the Phoronix Test Suite~\cite{phoronix} and the hackbench~\cite{hackbench} microbenchmark. Each benchmark is executed 50 times, with kernel caches cleared between runs to ensure result consistency. We report the mean and 95\% confidence interval for all measurements. 
+
+\parspace
+\textbf{Evaluated schedulers} To facilitate a controlled comparison, we implement a minimal FIFO scheduler using both SaaKM and sched\_ext. Both implementations are designed to make identical scheduling decisions, isolating the impact of the underlying framework. Each scheduler maintains a per-CPU local FIFO runqueue, and threads are statically assigned to CPUs based on their PID. No load balancing is performed, ensuring a deterministic scheduling behavior and minimizing confounding factors. Only benchmark threads are managed by the evaluated policies.
+
+
+% We compare ourselves to the ext scheduler. We implement a minimal FIFO scheduler for comparaison. Functions to select CPUs are based on threads PIDs as e want to mesaure the overhead of SaaKM and not the efficiency of a scheduling algorithm. \\
+% We ran a total of X applications, using the phoronix test suite and builtin benchmarks from applications. \newpage
+
+\subsection{Results evaluation}
+% \par The goal of our experimenta/tion is to evaluate if SaaKM is a viable solution for writing schedulers and how it performs compared to existing solution. We are motivated by the
+On average, we see 0.33\% (+/- 1.04\%) of gain with the SaaKM implementation. Table~\ref{tab:bench-res} sums up the results per benchmark. We have a maximum loss with clickhouse for which we avec a decrease of 1.23\% of Queries Per Minute (QPM). The application showing the best results is x265 with a gain of 2.48\% of Frames Per Second (FPS). Out of the 16 benchmarked applications, 10 have a gain or loss between $-0.5\%$ and $0.5\%$. 
+\parspace
+Only two applictions showed more than 1\% loss, the 7zip compression and clickhouse, with respectively -1.2\% and -1.23\%. \note{j'ai des résultats clickhouse avec +0.57\% quand le cache est froid et -0.57\% au second run, là les résultats c'est le 3ème run, je trouve ça plus pertinent de montrer les résultats avec le cache chaud. Mais on peut peut être se servir des deux autres pour montrer que c'est peut être un problème de latence dans saaKM ?}
+
+\subsection{Limitations}
+While our evaluation demonstrates that SaaKM is a practical framework for implementing schedulers, it is limited to a simple per-CPU FIFO policy. Further investigation is needed with more complex schedulers, such as Shinjuku~\cite{shinjuku} and EEVDF~\cite{eevdf}, to fully assess SaaKM's capabilities and performance in diverse scenarios.
+\parspace
+Additionally, our experiments did not utilize SaaKM's multi-policy support. Exploring its impact on workloads involving multiple applications, as well as any potential overhead introduced by policy iteration, remains an open area for future work.
+% Our evaluation shows that SaaKM is a viable solution to write schedulers but it needs deeper tests. In this work we only test a simple per-cpu FIFO scheduler, we need to implement more schedulers such as Shinjuku~\cite{shinjuku}, EEVDF~\cite{eevdf} to see how we perform against them. 
+
+% We did not leverage the multi-policy support of SaaKM, it would be interresting to see how it impacts multiple applications workloads and if the architecture adds overhead due to the policies iteration. 
+
+x265, Cassandra and npb shows the best improvements, all three gaining more than 1.99\%. 
+\begin{itemize}
+        \item Definir les métriques
+        \item Definir ce à quoi on se compare
+        \item Présenter l'env et les benchmarks et les motiver
+        \item Présentation et analyse des résultats
+\end{itemize}
+
+\note{pour le tableau, est-ce que je laisse comme ça ou je remets les pourcentage sans prendre en compte lower/higher is better et je rajoute une petite colonne pour indiquer la lecture de la ligne ? (lower/higher)}
+
+\begin{table*}[p]
+        \centering
+        \caption{Benchmarks results. The Gain/Loss column represents the difference between ext and SaaKM in percentage.}
+        \label{tab:bench-res}
+        \begin{tabular}{|l|l|l|l|l|}
+        % \toprule
+        \hline
+                Application - Metric & Reading & ext & SaaKM & Gain/Loss \\
+                \hline
+                blender - Time (s) & \lsb & 141.99 $\pm$ 0.52 & 140.25 $\pm$ 0.33 & 1.24\% \\
+                Linux Kernel Compilation - Time (s) & \lsb & 214.66 ($\pm$ 2.63) & 215.31 ($\pm$ 2.17) & 0.30 \\
+                cassandra - Operations per second (ops/s) & \hsb & 102686.36 $\pm$ 499.01 & 103036.42 $\pm$ 593.6 & 0.34\% \\
+                clickhouse\_third-run - Queries per minute & \hsb & 126.23 $\pm$ 1.39 & 123.43 $\pm$ 1.42 & -2.24\% \\
+                cloverleaf - Time (s) & \lsb & 152.81 ($\pm$ 0.34) & 153.09 ($\pm$ 0.45) & 0.18 \\
+                7zip Compression - MIPS & \hsb & 58262.14 ($\pm$ 174.44) & 57350.00 ($\pm$ 98.97) & -1.58 \\
+                7zip Decompression - MIPS & \hsb& 71097.98 ($\pm$ 69.42) & 71372.50 ($\pm$ 34.62) & 0.39 \\
+                dav1d - fps & \hsb & 188.02 ($\pm$ 0.34) & 188.64 ($\pm$ 0.32) & 0.33 \\
+                ffmpeg - fps & \hsb & 211.36 ($\pm$ 0.52) & 211.49 ($\pm$ 0.40) & 0.06 \\
+                hackbench - Time (s) & \lsb & 33.3 $\pm$ 0.03 & 32.75 $\pm$ 0.03 & 1.68\% \\
+                namd - ns/day & \hsb & 0.64 ($\pm$ 0.00) & 0.64 ($\pm$ 0.00) & 0.13 \\
+                npb - Mop/s & \hsb & 21992.45 $\pm$ 589.58 & 22089.27 $\pm$ 599.33 & 0.44\% \\
+                rbenchmark - Time (s) & \lsb & 0.57 ($\pm$ 0.00) & 0.57 ($\pm$ 0.00) & 0.22 \\
+                stockfish - Nodes/s & \hsb & 8392488.30 ($\pm$ 47463.53) & 8427082.62 ($\pm$ 43999.91) & 0.41 \\
+                svt-av1 - fps & \hsb & 95.09 ($\pm$ 0.14) & 95.13 ($\pm$ 0.13) & 0.04 \\
+                x265 - fps & \hsb & 57.50 ($\pm$ 1.21) & 58.94 ($\pm$ 1.32) & 2.48 \\
+                \hline
+        
+        \end{tabular}
+\end{table*}
+

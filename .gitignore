@@ -1,7 +1,9 @@
 **/.ccls-cache/
 **/compile_commands.json
-
-
+**/traces/
+*.dat
+code/record-traces/
+code/record/
 # From : https://github.com/github/gitignore/blob/main/C.gitignore
 # Prerequisites
 *.d

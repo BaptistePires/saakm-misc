@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2026/dev/Arch Linux) (preloaded format=pdflatex 2025.4.15)  29 AUG 2025 04:16
+This is pdfTeX, Version 3.141592653-2.6-1.40.27 (TeX Live 2026/dev/Arch Linux) (preloaded format=pdflatex 2025.4.18)  30 AUG 2025 11:55
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -670,7 +670,11 @@ File: pgflibraryshapes.arrows.code.tex 2023-01-15 v3.1.10 (3.1.10)
 (/usr/share/texmf-dist/tex/generic/pgf/frontendlayer/tikz/libraries/tikzlibrary
 shapes.callouts.code.tex
 (/usr/share/texmf-dist/tex/generic/pgf/libraries/shapes/pgflibraryshapes.callou
-ts.code.tex))) (./main.aux)
+ts.code.tex))) (./main.aux
+
+LaTeX Warning: Label `tab:bench-res' multiply defined.
+
+)
 \openout1 = `main.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 32.
@@ -711,14 +715,14 @@ Package epstopdf-base Info: Redefining graphics rule for `.eps' on input line 4
 File: epstopdf-sys.cfg 2010/07/13 v1.3 Configuration of (r)epstopdf for TeX Liv
 e
 ))
-LaTeX Font Info:    Calculating math sizes for size <11> on input line 64.
-LaTeX Font Info:    Trying to load font information for U+msa on input line 64.
+LaTeX Font Info:    Calculating math sizes for size <11> on input line 69.
+LaTeX Font Info:    Trying to load font information for U+msa on input line 69.
 
 
 (/usr/share/texmf-dist/tex/latex/amsfonts/umsa.fd
 File: umsa.fd 2013/01/14 v3.01 AMS symbols A
 )
-LaTeX Font Info:    Trying to load font information for U+msb on input line 64.
+LaTeX Font Info:    Trying to load font information for U+msb on input line 69.
 
 
 (/usr/share/texmf-dist/tex/latex/amsfonts/umsb.fd
@@ -894,11 +898,11 @@ Underfull \hbox (badness 10000) in paragraph at lines 15--16
  []
 
 
+
+
 Underfull \hbox (badness 10000) in paragraph at lines 17--18
 
  []
-
-
 
 
 LaTeX Warning: Reference `fig:sched-class-saakm' on page 3 undefined on input l
@@ -956,6 +960,11 @@ Underfull \hbox (badness 10000) in paragraph at lines 42--43
 Underfull \hbox (badness 2443) in paragraph at lines 44--46
 []\OT1/ptm/b/n/10 Thread states \OT1/ptm/m/n/10 We de-fine our own thread state
 s to
+ []
+
+
+Underfull \hbox (badness 10000) in paragraph at lines 44--46
+\OT1/ptm/m/n/10 SAAKM[]READY[]TICK that al-lows pol-icy to no-tify
  []
 
 
@@ -1116,7 +1125,12 @@ Underfull \hbox (badness 10000) in paragraph at lines 25--26
 
  []
 
-) (./future_works.tex) (./conclusion.tex
+LaTeX Font Info:    Trying to load font information for TS1+ptm on input line 7
+5.
+(/usr/share/texmf-dist/tex/latex/psnfss/ts1ptm.fd
+File: ts1ptm.fd 2001/06/04 font definitions for TS1/ptm.
+)) (./future_works.tex)
+(./conclusion.tex
 Underfull \hbox (badness 3954) in paragraph at lines 2--3
 []\OT1/ptm/m/n/10 Through this work we pre-sented SaaKM, a ker-nel
  []
@@ -1151,15 +1165,18 @@ L3 programming layer <2025-01-18>
 
 LaTeX Warning: There were undefined references.
 
+
+LaTeX Warning: There were multiply-defined labels.
+
  ) 
 Here is how much of TeX's memory you used:
- 18026 strings out of 475171
- 381164 string characters out of 5767095
- 897249 words of memory out of 5000000
- 40626 multiletter control sequences out of 15000+600000
- 604043 words of font info for 129 fonts, out of 8000000 for 9000
+ 18053 strings out of 475142
+ 381546 string characters out of 5765946
+ 903390 words of memory out of 5000000
+ 40658 multiletter control sequences out of 15000+600000
+ 604357 words of font info for 130 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
- 94i,11n,93p,1446b,477s stack positions out of 10000i,1000n,20000p,200000b,200000s
+ 94i,11n,93p,1444b,477s stack positions out of 10000i,1000n,20000p,200000b,200000s
 </usr/share/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb></usr/share/
 texmf-dist/fonts/type1/public/amsfonts/cm/cmmi8.pfb></usr/share/texmf-dist/font
 s/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf-dist/fonts/type1/public/
@@ -1169,7 +1186,7 @@ hare/texmf-dist/fonts/type1/urw/courier/ucrr8a.pfb></usr/share/texmf-dist/fonts
 /type1/urw/times/utmb8a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmbi8
 a.pfb></usr/share/texmf-dist/fonts/type1/urw/times/utmr8a.pfb></usr/share/texmf
 -dist/fonts/type1/urw/times/utmri8a.pfb>
-Output written on main.pdf (7 pages, 243492 bytes).
+Output written on main.pdf (7 pages, 244827 bytes).
 PDF statistics:
  192 PDF objects out of 1000 (max. 8388607)
  107 compressed objects within 2 object streams

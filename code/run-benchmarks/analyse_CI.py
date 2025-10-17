@@ -7,6 +7,10 @@ with open(fin, "r") as f:
                 l = l.strip()
                 bench, file, sched, mean, CI_low, CI_high = l.split()
                 
+                file_metric= file.split("-")
+                if len(file_metric) == 2:
+                        bench += "-" + file_metric[1].split(".")[0]
+
                 if bench not in benchmarks:
                         benchmarks[bench] = {}
                 if sched not in benchmarks[bench]:
@@ -47,4 +51,4 @@ for benchmark in benchmarks:
   
         ext_mean = benchmarks[benchmark]["ext"]["mean"]
         ipanema_mean = benchmarks[benchmark]["ipanema"]["mean"]
-        print(f"{benchmark} & {ext_mean:.2f} ($\\pm$ {ext_ci_high - ext_ci_low:.2f}) & {ipanema_mean:.2f} ($\\pm$ {ipanema_ci_high - ipanema_ci_low:.2f}) & {percent_diff:.2f} \\\\")
+        print(f"{benchmark} & {ext_mean:.2f} ($\\pm$ {ext_ci_high - ext_mean:.2f}) & {ipanema_mean:.2f} ($\\pm$ {ipanema_ci_high - ipanema_mean:.2f}) & {percent_diff:.2f} \\\\")

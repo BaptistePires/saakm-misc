@@ -1,0 +1,3 @@
+I am Baptiste Pires and persuig a PhD in computer sciences at the LIP6 laboratory in Sorbonne Université. My main focus of research are Operating Systems and more precisly scheduling. We submited our paper "SaaKM : Schedulers as Kernel Module" to IEEE NCA conference in the hope to attend and present our work. Currently we are working on leveraging our work on modular schedulers to generate and tune application-specific schedulers.
+
+Attenting NCA would allow me meet and exchange ideas with people from laboratory around the world to broaden my views. While OS is a small topic of NCA, the the wide variety of topics presented and represented motivate me to attend. 

@@ -1,0 +1,149 @@
+% !TEX root = ./main.tex
+
+\section{Design}
+\label{sec:design}
+
+This section presents the design of SaaKM (Schedulers as a Kernel Module), our framework for implementing custom Linux schedulers as kernel modules. We begin by establishing our design goals, then present the overall architecture, and finally detail the key implementation decisions that enable accessible scheduler development while maintaining safety and performance.
+
+\subsection{Design Goals}
+
+The complexity of modern scheduler development in Linux presents significant barriers to innovation and experimentation. Our analysis of existing approaches reveals three fundamental challenges that SaaKM aims to address.
+
+\parspace
+\textbf{Accessibility} The primary barrier to scheduler innovation is the steep learning curve required for Linux kernel development. Traditional scheduler implementation requires deep understanding of complex synchronization mechanisms including RCU, memory barriers, and intricate locking protocols. The scheduler has many data structures that are protected by RCU, and incorrect handling of these mechanisms can lead to subtle bugs or system crashes. Existing solutions either require learning new programming paradigms (eBPF for sched\_ext, Rust for Enoki) or impose architectural complexity (userspace delegation in ghOSt). SaaKM addresses this by providing a familiar development environment using standard C and Linux kernel module practices, allowing developers to leverage existing knowledge and toolchains.
+
+\parspace
+\textbf{Performance} Scheduling decisions occur on critical system paths where even small overheads can significantly impact overall system responsiveness. Modern Linux kernels rely on highly optimized code paths for networking, security, virtualization, and process management, making it essential that any scheduler framework introduces minimal overhead. SaaKM achieves this by implementing a thin abstraction layer (less than 1500 lines of code) that provides essential services without compromising the performance characteristics of in-kernel scheduling.
+
+\parspace
+\textbf{Development Velocity} Traditional kernel scheduler development involves lengthy cycles of compilation, deployment, and testing. Debugging scheduler implementations is particularly challenging due to the difficulty of reproducing timing-dependent issues and the potential for system crashes during development. SaaKM addresses this through kernel module-based development that enables rapid iteration cycles, comprehensive debugging support through existing kernel debugging infrastructure, and runtime state validation to catch common programming errors.
+
+\subsection{Architecture Overview}
+
+SaaKM implements a new scheduling class that integrates seamlessly with Linux's existing scheduler hierarchy. Scheduling classes are implemented through the \texttt{sched\_class} structure, which contains hooks to functions that must be called whenever an interesting event occurs. Figure \ref{fig:sched-class-saakm} illustrates how SaaKM positions itself within this hierarchy.
+
+\begin{figure}[htbp]
+    \centering
+    \includesvg[width=0.45\textwidth]{figures/linux-saakm-class.svg}
+    \caption{SaaKM scheduling class integration with Linux scheduler hierarchy}
+    \label{fig:sched-class-saakm}
+\end{figure}
+
+Our scheduling class is positioned between the existing ext and idle scheduling classes, ensuring that SaaKM policies are considered only when no higher-priority scheduling classes have runnable tasks.
+
+\parspace
+The framework supports multiple concurrent policies within a single scheduling class, enabling fine-grained specialization where different applications can select optimal schedulers for their specific requirements. This capability addresses the growing recognition that no single scheduling algorithm can optimally serve all workload types in modern computing environments.
+
+\subsection{Event-Driven Abstraction}
+
+The core innovation of SaaKM is an event-driven abstraction that simplifies scheduler implementation by clearly delineating scheduling events and hiding the underlying complexity of kernel synchronization mechanisms. Traditional scheduler development requires understanding the multiple code paths that can trigger the same scheduling function. The \texttt{enqueue\_task} function might lead to process switch, but distinguishing between a newly forked task, a migrating task, and a waking task requires deep knowledge of the calling context.
+
+\parspace
+SaaKM addresses this complexity through a structured event model that categorizes scheduling events into two distinct types:
+
+\parspace
+\textbf{Thread Events} encompass all lifecycle changes for individual tasks, including creation, termination, blocking, and wake-up events. These events provide clear semantics about what is happening to a specific task without requiring the scheduler author to understand the complex code paths that led to the event.
+
+\parspace
+\textbf{Core Events} handle CPU-centric operations such as scheduling decisions, idle transitions, and load balancing activities. These events abstract the complex interactions between the scheduler core and individual CPU runqueues.
+
+\parspace
+Table \ref{tab:saakm-callbacks} provides a comprehensive overview of the event handlers that policies must implement. This event-driven approach ensures that scheduler authors receive clear, actionable information about system state changes without needing to understand the intricate details of kernel synchronization.
+
+\begin{table}[htbp!]
+    \caption{SaaKM Event Handler Functions}
+    \begin{tabular}{|l|p{6.5cm}|}
+        \hline
+        \textbf{Function} & \textbf{Description} \\
+        \hline
+        \multicolumn{2}{|l|}{\textbf{Thread Events}} \\
+        \hline
+        new\_prepare(task) & Return CPU ID where newly created task should run \\
+        new\_place(task, cpu) & Insert new task into specified CPU runqueue \\
+        unblock\_prepare(task) & Return CPU ID for task transitioning from blocked to ready \\
+        unblock\_place(task, cpu) & Insert unblocked task into specified CPU runqueue \\
+        block(task) & Handle task transitioning to blocked state \\
+        yield(task) & Handle voluntary CPU relinquishment \\
+        tick(task, cpu) & Process scheduling tick for running task \\
+        terminate(task) & Clean up resources for terminating task \\
+        \hline
+        \multicolumn{2}{|l|}{\textbf{Core Events}} \\
+        \hline
+        schedule(cpu) & Select next task to run on specified CPU \\
+        newly\_idle(cpu) & Handle CPU transition to idle with no ready tasks \\
+        enter\_idle(cpu) & Process CPU entering idle state \\
+        exit\_idle(cpu) & Handle CPU exiting idle state due to runnable task \\
+        balancing\_select(cpu) & Perform load balancing for specified CPU \\
+        core\_entry(cpu) & Initialize policy state for CPU coming online \\
+        core\_exit(cpu) & Clean up policy state for CPU going offline \\
+        \hline
+        \multicolumn{2}{|l|}{\textbf{Policy Management}} \\
+        \hline
+        init() & Initialize global policy state \\
+        free\_metadata(task) & Release policy-specific task metadata \\
+        checkparam\_attr(attr) & Validate scheduler attribute parameters \\
+        setparam\_attr(attr) & Apply validated scheduler parameters \\
+        \hline
+    \end{tabular}
+    \label{tab:saakm-callbacks}
+\end{table}
+
+\subsection{Synchronization Abstraction}
+
+One of the most significant challenges in scheduler development is correctly handling the complex synchronization requirements of multicore systems. RCU may need to wake up threads to perform things like completing grace periods and callback execution, creating intricate dependencies between the scheduler and RCU subsystems. Modern Linux kernels use sophisticated synchronization mechanisms including RCU, memory barriers, and hierarchical locking protocols to ensure data consistency across NUMA architectures.
+
+\parspace
+SaaKM abstracts this complexity through several key mechanisms:
+
+\parspace
+\textbf{Two-Phase Operations} For operations that require cross-CPU coordination, SaaKM separates CPU selection from queue manipulation. The \texttt{prepare} phase allows policies to make scheduling decisions while holding minimal locks, followed by a \texttt{place} phase that performs the actual queue operations with appropriate synchronization. This separation ensures that policies never need to reason about lock ordering or acquisition protocols.
+
+\parspace
+\textbf{Lock-Free Event Delivery} All event handlers are invoked with appropriate locks already held by the SaaKM core. Policies can safely access and modify scheduling state without understanding the underlying locking protocols. This design eliminates common sources of deadlocks and race conditions in scheduler development.
+
+\parspace
+\textbf{State Transition Validation} SaaKM maintains a comprehensive state machine for task scheduling states and validates all transitions at runtime. Figure \ref{fig:saakm-states} illustrates the permitted state transitions. This validation catches many common programming errors during development and provides clear diagnostic information when invalid transitions are attempted.
+
+\begin{figure}[htbp]
+    \centering
+    \includesvg[width=0.5\textwidth]{figures/saakm-states.svg}
+    \caption{SaaKM thread state machine with permitted transitions}
+    \label{fig:saakm-states}
+\end{figure}
+
+\subsection{Runqueue Management}
+
+SaaKM provides three common runqueue implementations to accelerate policy development: FIFO queues for simple round-robin policies, general-purpose linked lists for priority-based scheduling, and red-black trees for algorithms requiring ordered access to tasks. Each implementation handles the necessary metadata management and provides consistent interfaces for task insertion, removal, and traversal operations. Policies must provide ordering functions for list and tree-based runqueues.
+
+% \parspace
+% , allowing flexible customization of scheduling priorities and policies. The runqueue implementations handle per-CPU cache optimization and NUMA-aware memory allocation to ensure good performance across diverse hardware configurations.
+
+\subsection{Load Balancing and Migration}
+
+Modern multicore systems require sophisticated load balancing to achieve optimal performance. SaaKM provides infrastructure for both periodic load balancing and idle-initiated balancing through a dedicated software interrupt mechanism.
+
+\parspace
+The framework exports hardware topology information through per-CPU \texttt{topology\_levels} variables that describe the underlying hierarchy. This information allows policies to make intelligent migration decisions that consider the costs of moving tasks between different levels of the memory hierarchy.
+
+\parspace
+\note{Task migration is handled transparently through an \texttt{OUSTED} flag mechanism, which is fully managed within the scheduling class. Policies do not access this flag directly; instead, the framework ensures correct handling of affinity changes and load balancing operations without requiring policies to track migration state.}
+
+\subsection{Multi-Policy Support}
+
+SaaKM enables multiple scheduling policies to coexist within the same system, allowing applications to select the most appropriate scheduler for their specific requirements. Policies are assigned unique identifiers upon registration and maintained in an ordered list.
+
+\parspace
+When scheduling decisions are required, SaaKM iterates through the registered policies in insertion order, allowing the first policy that has a runnable task to make the scheduling decision. This approach provides flexibility while maintaining low overhead for the common case of a single active policy.
+
+\parspace
+Applications select their preferred scheduling policy using the standard \texttt{sched\_setscheduler} interface with the \texttt{SCHED\_SAAKM} policy and a policy-specific identifier in the scheduler attributes. This mechanism integrates seamlessly with existing process management tools and workflows.
+
+\subsection{Debugging and Testing Infrastructure}
+
+SaaKM provides comprehensive debugging support through integration with existing kernel debugging infrastructure. Policies can leverage KGDB\cite{kgdb}, ftrace, and other standard kernel debugging tools without requiring specialized knowledge of scheduler-specific debugging techniques.
+
+\parspace
+The framework provides configurable runtime validation of state transitions, runqueue consistency checks, and policy-specific invariants. When violations are detected, SaaKM can generate detailed diagnostic information and optionally trigger kernel panics to provide immediate feedback during development.
+
+\parspace
+A procfs interface exposes information about currently loaded policies, their runtime statistics, and configuration parameters. This interface facilitates both development debugging and production monitoring of scheduler behavior. The sysfs interface provides runtime control over debugging features, allowing developers to enable or disable specific validation checks, logging levels, and diagnostic output without recompiling the kernel or reloading policies.
